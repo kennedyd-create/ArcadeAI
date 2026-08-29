@@ -1,0 +1,3013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade AI - Custom Educational Game Generator & Studio v3.2</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        whsblue: { 50:'#eef2fb',100:'#dbe4f5',200:'#b8c9eb',300:'#8fa8db',400:'#5c7dc4',500:'#2f56a8',600:'#0f3488',700:'#002066',800:'#001a52',900:'#000f33' },
+                        whsgold: { 50:'#fdf8f0',100:'#f8ecd8',200:'#f0d9b0',300:'#e4c084',400:'#d5aa6a',500:'#c5a059',600:'#a9843f',700:'#8a6a32',800:'#6b5127',900:'#4a381b' }
+                    },
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+        :root { --whs-dark-blue: #002066; --whs-gold: #c5a059; --whs-light-blue: #d1e6f6; }
+        .whs-gradient-bg { background: linear-gradient(135deg, var(--whs-dark-blue) 0%, #0f3488 100%); }
+        .contour-banner-bg { opacity: 0.14; }
+        /* Subject colour buttons: each sets --dept-light/--dept-dark inline */
+        .dept-color-btn { background-color: var(--dept-light) !important; color: var(--dept-dark) !important; border-color: var(--dept-dark) !important; }
+        .dept-color-btn.active { background-color: var(--dept-dark) !important; color: #ffffff !important; border-color: var(--dept-dark) !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .dept-color-btn:hover:not(.active) { filter: brightness(0.97); }
+        .year-btn { padding: 0.6rem 0.5rem; border-radius: 0.6rem; background: white; border: 2px solid #e2e8f0; text-align: center; cursor: pointer; transition: all 0.15s; font-weight: 700; font-size: 0.75rem; color: #475569; }
+        .year-btn:hover { border-color: var(--whs-light-blue); }
+        .year-btn.active { border-color: var(--whs-dark-blue); background: var(--whs-light-blue); color: var(--whs-dark-blue); }
+        @keyframes gameEnter { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .game-enter { animation: gameEnter 0.35s ease-out; }
+        @keyframes statPop { 0% { transform: scale(1); } 35% { transform: scale(1.4); color: var(--whs-gold); } 100% { transform: scale(1); } }
+        .stat-pop { animation: statPop 0.45s ease; display: inline-block; }
+        @keyframes welcomeBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .welcome-bounce { animation: welcomeBounce 1.6s ease-in-out infinite; }
+        @keyframes welcomeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .welcome-in { animation: welcomeIn 0.4s ease-out; }
+        @keyframes confettiFall { 0% { transform: translate(0,0) rotate(0deg); opacity: 1; } 100% { transform: translate(var(--drift, 0px), 100vh) rotate(360deg); opacity: 0; } }
+        .confetti-piece { position: absolute; top: -20px; pointer-events: none; }
+        @keyframes shooterFall {
+            0% { top: -40px; left: var(--start-x); }
+            50% { left: var(--mid-x); }
+            100% { top: calc(100% - 36px); left: var(--end-x); }
+        }
+        @keyframes shooterBurst { 0% { transform: scale(0.4); opacity: 1; } 100% { transform: scale(2.4); opacity: 0; } }
+        @keyframes wsFoundPulse { 0% { transform: scale(1); box-shadow: 0 0 0 rgba(16,185,129,0); } 40% { transform: scale(1.2); box-shadow: 0 0 14px rgba(16,185,129,0.95); } 100% { transform: scale(1); box-shadow: 0 0 0 rgba(16,185,129,0); } }
+        .ws-found-pulse { animation: wsFoundPulse 0.6s ease-out; position: relative; z-index: 2; }
+        @keyframes muncherChomp { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.8); } }
+        .muncher-player-icon { display: inline-block; animation: muncherChomp 0.5s ease-in-out infinite; }
+        @keyframes muncherFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+        .muncher-ghost-icon { display: inline-block; animation: muncherFloat 1.2s ease-in-out infinite; }
+        .shooter-arena { cursor: crosshair; touch-action: none; }
+        .shooter-cannon { position: absolute; bottom: 6px; font-size: 1.8rem; pointer-events: none; z-index: 5; filter: drop-shadow(0 0 6px rgba(239,68,68,0.8)); transition: left 0.05s linear; transform: translateX(-50%); }
+        .shooter-term { transform: translateX(-50%); }
+        .shooter-projectile { position: absolute; width: 6px; height: 16px; background: linear-gradient(to top, #fbbf24, #ef4444); border-radius: 999px; pointer-events: none; z-index: 6; box-shadow: 0 0 8px rgba(239,68,68,0.85); }
+        .shooter-burst { position: absolute; width: 36px; height: 36px; border-radius: 999px; pointer-events: none; z-index: 6; animation: shooterBurst 0.35s ease-out forwards; background: radial-gradient(circle, rgba(255,255,255,0.95), rgba(239,68,68,0.55) 60%, transparent 72%); }
+        @media (prefers-reduced-motion: reduce) {
+            .game-enter, .stat-pop, .welcome-bounce, .welcome-in, .confetti-piece, .muncher-player-icon, .muncher-ghost-icon { animation: none !important; }
+            .shooter-term { animation-duration: 18s !important; }
+        }
+
+        /* ================= DARK MODE ================= */
+        /* Class-based overrides (toggled via <html class="dark">) rather than Tailwind's dark: variants,
+           since this file is built from literal utility classes rather than component-scoped styles.
+           Targets the structural chrome plus the emerald/rose feedback boxes every game reuses for
+           right/wrong answers. Per-game pastel accent colors (amber, purple, cyan, etc.) are left as-is
+           on purpose — they read as intentional pops of color against the dark page, a common dark-mode
+           pattern, rather than needing a bespoke dark value for every single game accent shade. */
+        html.dark body { background-color: #0b1220; }
+        html.dark .bg-white { background-color: #1e293b !important; }
+        html.dark .bg-slate-50 { background-color: #1e293b !important; }
+        html.dark .bg-slate-100 { background-color: #334155 !important; }
+        html.dark .text-slate-900 { color: #f1f5f9 !important; }
+        html.dark .text-slate-800 { color: #e2e8f0 !important; }
+        html.dark .text-slate-700 { color: #cbd5e1 !important; }
+        html.dark .text-slate-600 { color: #94a3b8 !important; }
+        html.dark .text-slate-500 { color: #94a3b8 !important; }
+        html.dark .text-slate-400 { color: #8296b0 !important; }
+        html.dark .border-slate-100 { border-color: #334155 !important; }
+        html.dark .border-slate-200 { border-color: #334155 !important; }
+        html.dark .border-slate-300 { border-color: #475569 !important; }
+        html.dark .bg-grid-pattern {
+            background-image:
+                linear-gradient(to right, rgba(148, 163, 184, 0.12) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+        }
+        /* Brand + universal feedback surfaces (whsblue/whsgold chrome, emerald/rose right-or-wrong boxes
+           reused by nearly every game) */
+        html.dark .bg-whsblue-50 { background-color: rgba(47, 86, 168, 0.16) !important; }
+        html.dark .border-whsblue-200 { border-color: rgba(47, 86, 168, 0.4) !important; }
+        html.dark .text-whsblue-900 { color: #b8c9eb !important; }
+        html.dark .text-whsblue-800 { color: #b8c9eb !important; }
+        html.dark .text-whsblue-700 { color: #8fa8db !important; }
+        html.dark .text-whsblue-600 { color: #8fa8db !important; }
+        html.dark .text-whsblue-500 { color: #8fa8db !important; }
+        html.dark .bg-whsgold-50 { background-color: rgba(197, 160, 89, 0.14) !important; }
+        html.dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.14) !important; }
+        html.dark .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.2) !important; }
+        html.dark .border-emerald-200 { border-color: rgba(16, 185, 129, 0.35) !important; }
+        html.dark .border-emerald-300 { border-color: rgba(16, 185, 129, 0.45) !important; }
+        html.dark .text-emerald-900 { color: #6ee7b7 !important; }
+        html.dark .text-emerald-800 { color: #6ee7b7 !important; }
+        html.dark .bg-rose-50 { background-color: rgba(244, 63, 94, 0.14) !important; }
+        html.dark .bg-rose-100 { background-color: rgba(244, 63, 94, 0.2) !important; }
+        html.dark .border-rose-200 { border-color: rgba(244, 63, 94, 0.35) !important; }
+        html.dark .border-rose-300 { border-color: rgba(244, 63, 94, 0.45) !important; }
+        html.dark .text-rose-900 { color: #fda4af !important; }
+        html.dark .text-rose-800 { color: #fda4af !important; }
+        html.dark .text-rose-700 { color: #fda4af !important; }
+        /* Inputs, code/JSON areas, and the year/subject picker buttons */
+        html.dark textarea, html.dark input[type="text"] { background-color: #1e293b !important; color: #e2e8f0 !important; }
+        html.dark .year-btn { background-color: #1e293b; border-color: #475569; color: #cbd5e1; }
+        html.dark .year-btn:hover { border-color: #5c7dc4; }
+        html.dark .year-btn.active { background-color: rgba(47, 86, 168, 0.35); border-color: #5c7dc4; color: #dbe4f5; }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 380px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 340px;
+            }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        .bg-grid-pattern {
+            background-size: 24px 24px;
+            background-image: 
+                linear-gradient(to right, rgba(226, 232, 240, 0.4) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(226, 232, 240, 0.4) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-whsblue-600 selection:text-white">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 shadow-md">
+        <!-- Gradient Banner -->
+        <div class="whs-gradient-bg relative overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 relative z-10">
+                <div class="flex justify-between items-center gap-4">
+                    <!-- Logo -->
+                    <div class="flex items-center space-x-3 sm:space-x-4 cursor-pointer" onclick="switchTab('promptbuilder')">
+                        <div class="relative flex items-center justify-center w-11 h-11 sm:w-14 sm:h-14 bg-white rounded-xl shadow-lg border border-white/30 shrink-0 p-1.5 sm:p-2">
+                            <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2050 1754" role="img" aria-label="WHS logo"><g transform="translate(0,1754) scale(.1,-.1)" fill="#002065"><path d="M9610 17519 c-656-18-1406-84-2045-179-38-6-99-15-135-20-36-5-92-14-125-19-33-6-88-15-122-21-93-15-171-29-230-40-29-5-77-15-105-20-29-6-78-14-108-20-30-5-75-14-100-20-25-5-67-15-95-20-27-5-68-14-90-19-22-5-56-12-75-16-19-3-51-10-70-15-19-5-55-13-80-19-74-16-223-51-260-61-19-5-46-12-60-15-35-8-248-65-285-75-16-4-57-16-90-25-33-9-98-27-145-41-47-14-98-29-115-34-109-30-552-173-590-190-11-5-40-16-65-24-25-8-65-22-90-31-25-9-70-26-100-37-30-11-64-24-75-28-11-5-96-38-190-75-172-67-192-76-277-114-26-11-50-21-53-21-2 0-28-11-57-24-29-13-75-34-103-46-231-102-662-319-828-416-32-19-60-34-63-34-2 0-21-11-42-24-20-13-89-54-152-91-832-493-1554-1144-1988-1792-45-67-90-137-101-155-10-18-41-71-68-118-75-130-163-314-212-445-13-33-27-69-32-80-24-56-87-269-110-370-94-414-101-883-20-1285 31-155 95-383 131-465 4-11 20-51 35-90 71-186 177-394 315-620 291-476 819-1027 1380-1441 30-22 82-61 116-85 72-53 394-268 444-296 19-11 71-42 115-70 79-48 200-118 325-187 81-45 599-304 660-330 25-11 74-33 110-48 135-61 186-82 225-98 11-4 36-15 55-23 19-8 89-36 155-62 66-26 131-52 145-57 33-14 55-22 120-46 30-11 75-28 100-37 203-78 352-105 577-105 95 0 194 4 220 9 26 5 77 15 113 21 36 7 76 15 90 20 14 4 45 13 70 20 173 49 404 147 595 254 33 18 83 46 110 61 142 79 514 321 766 499 216 152 512 322 674 385 11 5 31 13 45 19 571 235 1185 21 1344-470 44-135 62-380 35-482-27-103-34-125-61-181-115-244-391-415-672-415-377 0-644 259-523 508 12 24 27 29 27 9 0-144 271-265 433-193 152 67 243 273 181 407-6 13-22 47-35 74-88 185-330 278-565 215-72-19-94-29-184-76-270-141-379-614-208-899 25-42 7-66-27-37-6 5-44 19-85 32-41 12-100 31-130 41-50 16-96 30-250 75-59 17-182 50-242 65-21 5-55 13-75 18-60 15-223 50-281 61-30 5-63 12-74 15-10 4-34 0-51-8-67-31-186-83-222-97-11-4-31-12-45-18-92-38-245-88-377-123-18-5-48-13-66-19-18-6-41-10-50-10-34 0-16-18 26-24 49-9 108-19 190-35 31-6 82-15 112-21 30-5 81-15 113-20 31-6 82-15 112-20 30-5 81-14 113-20 31-5 83-15 115-20 31-6 84-15 117-21 33-5 85-14 115-19 30-5 87-14 125-20 39-6 97-16 130-21 33-6 87-14 120-19 33-5 89-14 125-20 36-5 97-15 135-20 141-21 201-30 265-40 36-6 101-15 145-21 44-6 112-15 150-20 492-68 734-81 870-47 140 34 153 39 262 89 306 141 537 409 621 724 32 119 37 160 37 340 0 474-171 814-537 1063-56 38-237 132-256 132-7 0-20 4-30 9-44 25-187 59-330 80-289 43-672-42-1037-230-194-99-400-224-575-348-124-88-439-303-465-317-11-6-74-44-140-84-689-419-1135-505-1575-302-418 192-469 761-85 949 63 31 131 46 181 40 70-7 72-18 16-71-141-132-145-323-9-463 159-165 452-102 561 122 241 491-324 986-873 766-383-154-609-559-537-966 15-83 11-87-61-54-267 121-593 286-806 408-20 11-52 29-70 40-86 49-248 148-299 182-31 22-59 39-63 39-3 0-29 17-58 37-28 20-101 71-160 112-164 114-186 130-283 206-903 705-1463 1523-1603 2340-6 33-16 92-23 130-19 105-15 573 5 695 41 243 92 452 137 555 4 11 25 63 45 115 81 208 237 496 366 675 266 370 529 652 882 948 121 102 144 120 287 227 47 35 101 75 120 90 19 15 96 67 170 117 114 75 188 123 377 239 12 8 38 23 57 34 20 11 53 30 74 41 20 12 60 34 87 50 28 15 79 43 115 63 36 20 169 87 295 150 227 112 292 143 390 186 28 12 74 33 103 46 29 13 55 24 57 24 3 0 27 9 53 21 26 12 56 25 67 29 11 4 36 15 55 23 19 9 55 23 80 32 25 9 56 22 70 27 14 6 34 14 45 18 11 4 31 12 45 18 14 5 50 19 80 30 30 11 75 28 100 37 25 9 65 23 90 31 25 8 54 19 65 24 32 14 445 150 520 170 17 5 62 18 100 30 39 12 86 26 105 31 19 6 49 14 65 19 17 5 65 18 108 29 42 12 112 30 155 42 42 11 93 25 112 29 19 5 53 14 75 19 22 6 58 15 80 20 59 15 113 27 175 41 30 7 71 16 90 20 52 13 217 49 280 61 30 6 73 15 95 19 118 24 243 48 320 61 33 6 83 15 110 19 205 36 488 80 653 101 39 5 107 13 150 19 1242 160 2793 183 4072 60 345-33 532-55 845-100 225-32 389-58 510-80 33-6 85-15 115-20 30-4 66-10 80-13 14-3 52-11 85-17 33-6 78-15 100-20 22-5 67-14 100-20 68-13 119-24 188-39 26-6 67-15 92-21 25-5 64-14 88-19 67-15 219-51 257-61 19-5 46-12 60-15 146-36 462-122 530-144 14-5 45-14 70-21 25-7 70-20 100-30 30-9 102-32 160-50 58-18 150-48 205-67 55-19 134-45 175-59 41-14 84-29 95-33 11-5 36-14 55-21 19-7 44-16 55-20 11-4 58-22 105-40 103-39 112-42 172-69 26-12 54-21 61-21 7 0 17-4 22-8 6-5 37-19 70-32 56-22 80-32 208-89 26-11 68-30 95-42 491-218 1064-538 1452-812 164-117 450-335 480-367 3-3 57-51 120-107 501-442 917-996 1111-1480 5-13 13-33 18-45 39-96 71-195 102-308 33-118 35-130 70-335 17-102 29-345 22-462-7-127-6-126-106-104-23 5-76 15-117 21-404 63-740 157-950 268-155 82-185 101-491 308-233 158-480 294-534 294-7 0-16 4-19 9-3 5-18 11-33 14-16 3-46 10-68 16-113 32-247 49-475 61-96 5-227 11-290 15-212 11-474 57-542 95-10 6-23 10-29 10-58 0-334 163-582 344-76 56-162 118-190 139-303 221-513 330-739 384-92 22-382 25-473 5-181-40-357-100-545-184-25-11-65-29-90-40-25-11-72-33-105-48-33-15-82-38-110-50-27-12-72-32-100-44-100-45-291-116-365-136-25-7-56-16-70-20-160-50-389-59-755-31-288 22-319 23-440 7-154-20-258-48-535-146-80-28-170-60-200-70-30-10-107-37-170-60-63-22-176-61-250-85-293-97-480-147-655-175-38-7-89-16-112-21-23-5-58-9-79-9-254 0-790-183-1169-400-22-13-64-36-94-53-29-16-90-52-135-80-44-28-110-68-146-90-83-52-374-247-560-377-289-201-650-440-667-440-10 0-32-28-26-34 4-3 1647-6 3652-6 3646 0 3646 0 3836 181 449 429 630 566 820 621 11 3 52 17 90 31 66 24 158 53 250 78 205 58 320 118 428 223 67 67 73 58 15-27-95-142-253-267-518-407-163-87-238-137-385-259-121-101-438-418-430-431 4-7 868-10 2572-10 2439 0 2565-1 2558-17-4-10-15-43-25-73-280-858-1136-1784-2245-2430-286-166-335-193-625-338-443-220-430-216-418-139 17 113 20 216 9 283-18 104-34 168-43 179-4 5-8 15-8 22 0 23-42 106-91 178-252 376-732 491-1076 257-376-255-322-830 86-907 312-59 503 332 269 551-56 53-54 64 16 71 132 15 326-105 389-240 45-95 49-115 49-221 0-116-10-159-63-271-112-235-527-404-872-355-266 39-531 137-827 307-204 118-314 185-425 263-158 109-646 434-690 460-22 12-56 32-75 43-561 320-1086 399-1517 226-13-5-33-13-45-18-1029-396-1047-1908-28-2288 207-77 386-87 758-43 205 25 287 35 452 59 36 5 101 15 145 21 115 16 275 41 403 61 151 24 180 28 240 39 34 5 89 15 122 20 33 6 86 14 118 20 92 15 173 29 237 39 33 6 86 15 118 21 31 5 83 15 115 20 31 6 82 15 112 20 30 6 78 14 105 20 192 36 240 45 303 56 58 9 53 17-20 34-35 7-72 17-83 21-11 4-40 13-65 19-64 18-220 69-250 82-14 6-35 15-47 19-71 28-181 75-270 116-17 8-41 12-51 8-11-3-46-10-79-16-107-20-167-32-273-59-22-5-57-14-77-19-43-11-182-48-230-62-18-5-48-13-65-18-78-22-239-72-361-113-106-35-105-36-70 38 54 113 73 195 73 319-1 252-115 459-312 569-364 202-773 25-772-334 0-344 481-451 610-136 22 52 26 55 42 24 87-177-44-396-280-469-212-66-392-51-591 47-259 128-396 362-397 679-1 527 359 875 907 875 198 0 338-30 538-115 80-34 232-110 294-147 34-21 65-38 67-38 12 0 551-362 649-435 29-22 155-102 300-190 754-459 1314-565 1875-355 47 17 96 35 110 40 21 6 165 62 238 91 12 5 33 14 47 19 14 6 35 14 48 19 12 5 43 18 69 30 26 12 50 21 53 21 3 0 27 10 53 21 26 12 61 27 77 34 28 12 53 23 168 74 23 10 65 29 92 41 239 106 706 352 960 505 178 108 219 134 355 226 640 434 1099 853 1483 1355 128 167 340 506 409 654 57 122 88 191 88 195 0 3 9 24 19 48 55 123 137 384 164 517 2 14 11 59 20 100 15 73 24 135 48 345 17 152 4 471-30 685-62 398-229 853-440 1195-24 39-52 85-63 104-337 590-1249 1428-2048 1883-19 11-47 29-62 39-14 11-29 19-33 19-4 0-19 8-33 18-15 11-53 33-84 50-32 18-84 46-115 64-200 111-517 269-715 357-101 44-145 64-196 87-29 13-55 24-57 24-2 0-33 13-67 28-35 16-112 48-173 71-60 24-121 48-135 53-33 14-54 22-125 48-33 12-69 26-80 30-11 4-36 13-55 20-19 7-44 16-55 20-45 19-294 103-475 160-58 18-125 40-150 48-25 8-58 18-75 23-60 16-111 30-142 40-18 5-50 14-70 20-21 5-51 14-68 19-80 23-465 123-545 141-25 5-61 14-80 18-19 5-60 14-90 21-30 7-71 16-90 20-19 4-71 15-115 24-44 9-98 20-120 25-44 10-98 21-255 51-160 30-199 38-275 50-38 6-90 15-115 20-25 5-81 13-125 20-44 6-105 15-135 20-30 5-91 14-135 20-44 6-109 15-145 20-103 15-354 44-505 59-55 6-125 13-155 17-632 67-1600 96-2450 73zM3938 13815 c-31-31-227-48-293-25-134 47-282 8-484-129-52-36-157-101-226-141-16-10-70-41-120-70-79-46-265-139-365-183-19-8-57-25-85-37-27-12-65-28-82-36-18-8-50-21-70-30-21-9-51-22-68-29-16-7-51-22-77-34-26-11-50-21-53-21-3 0-27-10-53-21-113-51-132-59-137-59-3 0-25-9-50-20-25-11-65-29-90-40-25-11-47-20-50-20-2 0-34-13-70-30-36-16-69-30-72-30-15 0-273-133-284-146-10-12 281-14 2080-14 2091 0 2091 0 2159 41 204 126 349 202 432 229 167 53 180 47-285 141-395 81-368 74-570 128-219 59-562 261-751 442-126 121-159 139-257 139-40 0-76-2-79-5zM7570 13289 c-123-14-268-40-330-59-14-4-45-13-70-20-104-30-286-93-297-103-3-4-12-7-20-7-7 0-35-10-61-21-112-50-132-59-137-59-2 0-30-12-62-26-32-15-82-37-111-50-29-13-55-24-57-24-4 0-71-29-175-77-89-41-472-231-505-251-16-9-52-31-80-47-78-45-310-201-415-278-52-39-111-82-129-96-50-36-161-147-161-160 0-29 2605-14 2657 15 99 55 262 149 383 222 69 41 139 83 155 92 17 10 57 33 90 52 187 110 482 258 636 318 60 24 242 83 304 98 104 27 125 33 125 42 0 6-4 10-10 10-5 0-39 14-75 30-36 17-70 30-75 30-6 0-18 4-28 10-15 8-137 49-242 81-19 6-59 19-87 30-29 10-79 28-110 40-32 12-67 25-78 29-169 68-406 139-535 159-195 31-348 37-500 20zM14150 6029 c-134-21-187-31-210-39-14-4-45-13-70-20-128-35-310-125-415-204-312-238-472-513-567-971-17-82-17-511 0-585 7-30 18-80 24-110 11-57 43-170 58-205 4-11 18-47 31-80 116-309 352-631 805-1101 572-595 708-786 779-1089 27-116 17-316-20-420-104-290-470-310-622-35-96 174-146 524-113 789 6 46 9 86 6 88-5 5-72-6-271-47-22-4-67-13-100-20-33-7-78-16-100-20-22-4-65-13-95-19-229-45-427-87-437-94-16-10-18-363-3-470 30-208 71-378 119-492 184-432 494-713 906-820 169-44 513-62 657-35 130 25 198 41 263 62 452 148 830 576 926 1048 40 196 42 219 42 435 0 243-16 362-74 550-11 39-23 80-26 93-3 12-9 25-14 28-5 3-9 12-9 20 0 8-9 36-21 62-173 388-372 661-845 1156-581 608-698 776-744 1064-85 522 479 772 645 287 45-131 56-213 64-470 7-234-1-222 116-196 49 11 92 20 355 71 113 22 230 45 260 51 30 6 78 15 105 21 183 35 183 34 155 328-79 848-446 1285-1167 1390-84 12-314 11-393-1zM4709 5973 c-1-5 0-12 1-18 1-5 6-48 11-95 9-84 19-164 38-310 5-41 15-115 21-165 6-49 15-121 20-160 10-79 24-191 39-315 6-47 16-119 21-160 5-41 14-111 20-155 5-44 14-116 20-160 5-44 14-116 20-160 5-44 14-118 20-165 6-47 15-116 20-155 12-97 30-237 40-320 5-38 14-110 20-160 6-49 15-121 20-160 5-38 14-110 20-160 6-49 16-124 21-165 5-41 14-110 19-152 6-43 15-114 20-158 6-44 15-116 20-160 6-44 14-115 20-158 5-42 14-111 19-152 5-41 15-115 21-165 6-49 15-121 20-160 10-83 28-223 40-320 5-38 13-107 19-152 6-46 16-120 21-165 6-46 15-117 20-158 6-41 14-111 20-155 11-94 27-220 40-325 6-41 15-113 21-160 5-47 15-119 20-160 5-41 12-105 16-142 8-95-37-89 563-86 615 3 543-19 561 173 6 61 15 148 20 195 5 47 13 128 19 180 5 52 14 138 20 190 5 52 14 138 20 190 5 52 14 138 20 190 5 52 14 138 20 190 5 52 14 138 20 190 5 52 14 138 20 190 5 52 14 138 20 190 5 52 14 138 20 190 5 52 14 138 20 190 5 52 14 138 20 190 5 52 14 138 20 190 5 52 14 138 20 190 5 52 14 140 19 195 11 113 19 155 31 155 16 0 21-19 31-122 19-203 46-467 59-588 12-110 26-248 40-390 12-119 28-273 40-390 5-47 14-131 19-187 6-57 16-149 22-205 5-57 14-143 19-193 5-49 14-135 20-190 6-55 15-145 20-200 6-55 15-145 21-200 5-55 14-140 19-190 5-49 14-135 20-190 6-55 15-147 20-204 6-65 14-107 22-113 7-4 252-7 543-5 601 2 530-21 555 182 6 50 16 124 21 165 5 41 14 109 19 150 5 41 14 109 19 150 5 41 15 113 20 160 6 47 15 120 21 162 5 43 15 113 20 155 6 43 15 116 21 163 5 47 15 119 20 160 5 41 14 109 19 150 5 41 14 109 19 150 5 41 15 113 20 160 6 47 15 120 21 163 5 42 15 112 20 155 6 42 15 115 21 162 5 47 15 119 20 160 5 41 14 109 19 150 5 41 14 109 19 150 5 41 15 116 21 165 22 179 30 241 40 315 5 41 15 113 21 160 5 47 15 119 20 160 5 41 14 109 19 150 5 41 14 109 19 150 5 41 15 113 20 160 6 47 15 120 21 163 5 42 15 112 20 155 6 42 15 115 21 162 5 47 15 119 20 160 5 41 14 109 19 150 5 41 12 95 15 120 3 25 10 77 15 115 5 39 14 111 20 160 6 50 15 123 21 163 5 39 13 105 18 145 10 69 28 217 36 285 5 43-1110 53-1119 10-3-13-7-66-10-118-6-96-16-228-36-465-6-71-15-182-20-245-14-175-29-362-40-495-10-121-20-247-40-495-6-74-15-187-20-250-13-149-26-321-40-490-6-74-15-188-20-252-6-65-14-171-20-235-5-65-14-182-19-261-10-141-14-162-31-162-12 0-21 45-31 165-5 61-14 157-19 215-9 97-15 161-40 425-5 55-14 152-20 215-6 63-15 161-21 218-5 56-13 148-19 205-5 56-14 154-20 217-17 182-46 497-60 635-16 171-30 326-40 435-5 58-14 152-20 210-16 163-30 315-40 435-5 61-9 111-9 113-1 1-192 2-425 2-478 0-422 28-446-225-5-55-14-147-20-205-6-58-15-152-20-210-5-58-14-152-20-210-6-58-15-152-20-210-15-153-29-302-40-410-5-52-14-144-19-205-6-60-16-157-21-215-12-116-24-248-40-415-6-60-15-153-20-205-5-52-14-144-19-205-6-60-16-157-21-215-19-194-30-304-39-415-19-217-44-201-62 39-5 72-14 187-20 256-5 69-14 177-19 240-5 63-14 174-20 245-6 72-15 182-20 245-13 168-29 358-40 495-11 137-27 327-40 495-5 63-14 174-20 245-6 72-15 186-20 255-15 188-28 340-40 490-7 74-15 180-18 235-7 100-7 100-579 103-315 1-574-1-574-5zM9390 3025 c0-2955 0-2955 23-2960 12-3 279-4 592-3 l570 3 3 1258 2 1257 370 0 370 0 0-1249 c0-1041 2-1250 14-1260 9-8 174-10 597-9 l584 3 3 2958 2 2957-597-2-598-3-3-1217-2-1218-370 0-370 0 0 1220 0 1220-595 0-595 0 0-2955z"/></g></svg>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h1 class="font-black text-white text-lg sm:text-xl leading-tight tracking-tight">ARCADE <span class="text-whsgold-300">AI</span></h1>
+                                <span id="header-version-badge" class="hidden xs:inline-flex bg-white/15 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider border border-white/20">Studio v3.2</span>
+                            </div>
+                            <p id="header-tagline" class="text-xs text-whsblue-100 font-medium">Waiheke High School · Game Generator</p>
+                        </div>
+                    </div>
+
+                    <!-- Stats Bar -->
+                    <div class="hidden sm:flex items-center space-x-3 text-xs font-semibold">
+                        <div class="bg-white/10 border border-white/20 text-white px-3 py-1.5 rounded-lg flex items-center space-x-2 backdrop-blur-sm">
+                            <span class="text-whsblue-100 uppercase text-[10px] font-bold">Topic:</span>
+                            <span id="global-topic-name" class="text-whsgold-300 font-bold">Photosynthesis</span>
+                        </div>
+                        <div class="bg-white/10 border border-white/20 text-white px-3 py-1.5 rounded-lg flex items-center space-x-1.5 backdrop-blur-sm">
+                            <span>⭐</span>
+                            <span>Score: <span id="global-score-val" class="font-bold font-mono">0</span></span>
+                        </div>
+                        <div class="bg-white/10 border border-white/20 text-white px-3 py-1.5 rounded-lg flex items-center space-x-1.5 backdrop-blur-sm">
+                            <span>🔥</span>
+                            <span>Streak: <span id="global-streak-val" class="font-bold font-mono">0</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Sound + Dark Mode toggles -->
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button onclick="toggleSound()" id="sound-toggle-btn" class="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center text-sm transition-colors" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+                        <button onclick="toggleDarkMode()" id="dark-toggle-btn" class="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center text-sm transition-colors" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="bg-white border-b border-slate-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <nav class="flex space-x-2 sm:space-x-4 overflow-x-auto pt-1 custom-scrollbar" id="main-nav">
+                    <button onclick="switchTab('promptbuilder')" id="tab-promptbuilder" class="tab-btn border-b-[3px] border-whsgold-500 text-whsblue-800 font-extrabold px-3 py-2.5 text-sm whitespace-nowrap transition-colors flex items-center space-x-2">
+                        <span>🛠️ AI Prompt Architect</span>
+                    </button>
+                    <button onclick="switchTab('arcade')" id="tab-arcade" class="tab-btn border-b-[3px] border-transparent text-slate-600 hover:text-whsblue-700 font-semibold px-3 py-2.5 text-sm whitespace-nowrap transition-colors flex items-center space-x-2">
+                        <span>🎮 Play Arcade</span>
+                        <span id="nav-active-count-badge" class="bg-whsblue-100 text-whsblue-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">0 Active</span>
+                    </button>
+                    <button onclick="switchTab('analytics')" id="tab-analytics" class="tab-btn border-b-[3px] border-transparent text-slate-600 hover:text-whsblue-700 font-semibold px-3 py-2.5 text-sm whitespace-nowrap transition-colors flex items-center space-x-2">
+                        <span>📊 Analytics</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main View Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ================= VIEW 1: PROMPT BUILDER (MAIN) ================= -->
+        <section id="view-promptbuilder" class="tab-view space-y-3">
+            <!-- Hero Header -->
+            <div class="bg-white px-5 py-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-whsblue-50 text-whsblue-700 border border-whsblue-200 uppercase tracking-wider shrink-0">
+                    Teacher Setup Studio
+                </span>
+                <h2 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                    Design Custom Educational Games with AI
+                </h2>
+                <span class="text-slate-400 text-xs font-medium">— follow the three steps below.</span>
+            </div>
+
+            <!-- Reset -->
+            <div class="flex justify-center">
+                <button onclick="resetSession()" class="bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center space-x-1.5 shadow-sm">
+                    <span>🗑️ Reset Everything</span>
+                </button>
+            </div>
+
+            <div class="space-y-6 mt-2">
+                <!-- Config Box (Step 1 — full width) -->
+                <div class="bg-white p-6 rounded-2xl border-2 border-whsblue-100 shadow-sm space-y-5 relative">
+                    <div class="absolute -top-4 -left-4 w-10 h-10 bg-whsblue-700 rounded-full text-white font-black flex items-center justify-center text-xl shadow-lg border-4 border-white">1</div>
+                    <div>
+                        <h3 class="font-black text-whsblue-900 text-xl">
+                            Configure Your Game Suite
+                        </h3>
+                        <p class="text-[11px] text-slate-500 font-semibold mt-1">Pick a subject, year level and topic, optionally paste in your own material, then choose which games to include.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Subject</label>
+                                <div class="flex flex-wrap gap-2" id="builder-subject-buttons">
+                                    <button type="button" class="year-btn dept-color-btn" style="--dept-dark: #007040; --dept-light: #E4F4E5;" onclick="selectBuilderSubject('Science', this)">Science</button>
+                                    <button type="button" class="year-btn dept-color-btn" style="--dept-dark: #9F1559; --dept-light: #F8E7EE;" onclick="selectBuilderSubject('Mathematics', this)">Mathematics</button>
+                                    <button type="button" class="year-btn dept-color-btn" style="--dept-dark: #7900CC; --dept-light: #F5EFFF;" onclick="selectBuilderSubject('Social Sciences', this)">Social Sciences</button>
+                                    <button type="button" class="year-btn dept-color-btn" style="--dept-dark: #22229D; --dept-light: #EBF5FA;" onclick="selectBuilderSubject('English', this)">English</button>
+                                    <button type="button" class="year-btn dept-color-btn" style="--dept-dark: #1A6ABE; --dept-light: #ECFBFF;" onclick="selectBuilderSubject('Māori', this)">Māori</button>
+                                    <button type="button" class="year-btn dept-color-btn" style="--dept-dark: #DB2026; --dept-light: #FDECE7;" onclick="selectBuilderSubject('Technology', this)">Technology</button>
+                                    <button type="button" class="year-btn dept-color-btn" style="--dept-dark: #9A6300; --dept-light: #FFF7EE;" onclick="selectBuilderSubject('Arts', this)">Arts</button>
+                                    <button type="button" class="year-btn dept-color-btn" style="--dept-dark: #BF0000; --dept-light: #FFEDED;" onclick="selectBuilderSubject('PE & Health', this)">PE &amp; Health</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Year Level</label>
+                                <div class="grid grid-cols-7 gap-2" id="builder-year-buttons">
+                                    <button type="button" class="year-btn" onclick="selectBuilderYear('Year 7', this)">Y7</button>
+                                    <button type="button" class="year-btn" onclick="selectBuilderYear('Year 8', this)">Y8</button>
+                                    <button type="button" class="year-btn" onclick="selectBuilderYear('Year 9', this)">Y9</button>
+                                    <button type="button" class="year-btn" onclick="selectBuilderYear('Year 10', this)">Y10</button>
+                                    <button type="button" class="year-btn" onclick="selectBuilderYear('Year 11 (NCEA L1)', this)">Y11</button>
+                                    <button type="button" class="year-btn" onclick="selectBuilderYear('Year 12 (NCEA L2)', this)">Y12</button>
+                                    <button type="button" class="year-btn" onclick="selectBuilderYear('Year 13 (NCEA L3)', this)">Y13</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Specific Topic</label>
+                                <input type="text" id="builder-topic" placeholder="e.g. Cell Biology, The French Revolution, Algebraic Expressions" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-whsblue-500 transition-all shadow-inner" oninput="buildDynamicPrompt()">
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-end">
+                                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Select Game Modes</label>
+                                    <button onclick="selectAllGames(true)" class="text-[10px] font-bold text-whsblue-700 hover:underline">Select All</button>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2" id="builder-game-toggles">
+                                    <!-- Dynamically populated toggles -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Source Material <span class="normal-case font-semibold text-slate-400">(optional)</span></label>
+                            <p class="text-[11px] text-slate-500 font-semibold mb-2">Paste in a passage, article, or your own notes and the AI will base the games specifically on this content instead of general knowledge.</p>
+                            <textarea id="builder-content" oninput="buildDynamicPrompt()" placeholder="Paste a textbook passage, class notes, an article, or any other source text here..." class="w-full h-[calc(100%-3.25rem)] min-h-[220px] bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-900 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-whsblue-500 transition-all shadow-inner custom-scrollbar resize-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 & Step 3 side by side -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <!-- Prompt Output Box -->
+                <div class="relative">
+                    <div class="absolute -top-4 -left-4 w-10 h-10 bg-slate-700 rounded-full text-white font-black flex items-center justify-center text-xl shadow-lg border-4 border-slate-900 z-10">2</div>
+                    <div class="bg-slate-900 rounded-2xl shadow-sm overflow-hidden border border-slate-800">
+                        <div class="bg-slate-800 p-4 pl-8 border-b border-slate-700">
+                            <div class="flex justify-between items-center gap-2">
+                                <h3 class="font-bold text-white text-base">Give Prompt to AI</h3>
+                                <button onclick="copyDynamicPrompt()" class="bg-whsgold-600 hover:bg-whsgold-700 active:scale-95 text-white px-4 py-2 rounded-lg text-xs font-black transition-all shadow-md flex items-center space-x-1 shrink-0">
+                                    <span>📋 Copy Prompt</span>
+                                </button>
+                            </div>
+                            <p class="text-[11px] text-slate-400 font-semibold mt-1">Copy this prompt and paste it into ChatGPT, Gemini, or Claude.</p>
+                        </div>
+                        <div class="bg-slate-800/60 px-4 sm:pl-8 sm:pr-4 py-2.5 border-b border-slate-700 flex flex-wrap items-center gap-2">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mr-1">Then open:</span>
+                            <button onclick="openAiTab('https://chatgpt.com/', 'ChatGPT')" class="bg-slate-700 hover:bg-slate-600 text-slate-100 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors flex items-center space-x-1.5">
+                                <span>🤖 ChatGPT</span><span class="text-slate-400">↗</span>
+                            </button>
+                            <button onclick="openAiTab('https://gemini.google.com/app', 'Gemini')" class="bg-slate-700 hover:bg-slate-600 text-slate-100 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors flex items-center space-x-1.5">
+                                <span>✦ Gemini</span><span class="text-slate-400">↗</span>
+                            </button>
+                            <button onclick="openAiTab('https://claude.ai/new', 'Claude')" class="bg-slate-700 hover:bg-slate-600 text-slate-100 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors flex items-center space-x-1.5">
+                                <span>✳️ Claude</span><span class="text-slate-400">↗</span>
+                            </button>
+                        </div>
+                        <textarea id="dynamic-prompt-area" readonly class="w-full h-64 lg:h-[420px] bg-transparent text-emerald-400 font-mono text-xs p-5 custom-scrollbar resize-none focus:outline-none"></textarea>
+                    </div>
+                </div>
+
+                <!-- Right Column: JSON Import & Launch -->
+                <div class="bg-emerald-50 p-6 sm:p-8 rounded-2xl border-2 border-emerald-200 shadow-sm flex flex-col h-full space-y-4 relative mt-4 lg:mt-0">
+                    <div class="absolute -top-4 -left-4 w-10 h-10 bg-emerald-500 rounded-full text-white font-black flex items-center justify-center text-xl shadow-lg border-4 border-white z-10">3</div>
+                    <div>
+                        <h3 class="font-black text-emerald-900 text-xl">
+                            Paste AI Code & Play
+                        </h3>
+                        <p class="text-[11px] text-emerald-700 font-semibold mt-1">Paste the JSON the AI gives you back here, then launch.</p>
+                    </div>
+
+                    <button onclick="processBuilderJson()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black py-3 rounded-xl text-base shadow-lg transition-all flex items-center justify-center space-x-2 transform hover:-translate-y-0.5">
+                        <span class="text-xl">🎮</span>
+                        <span>Launch Custom Arcade</span>
+                    </button>
+
+                    <p class="text-sm text-emerald-800 font-medium">
+                        Did Gemini give you a block of code starting with <code>{</code> and ending with <code>}</code>? Copy it and paste it right here:
+                    </p>
+                    
+                    <textarea id="builder-json-import" placeholder="Paste the generated JSON from Gemini here...&#10;&#10;{&#10;  &quot;topic&quot;: &quot;World War II&quot;,&#10;  &quot;quiz&quot;: [ ... ]&#10;}" class="w-full h-[260px] bg-white text-slate-800 font-mono text-xs p-4 rounded-xl custom-scrollbar resize-none border-2 border-emerald-300 shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-500/20"></textarea>
+                    
+                    <button onclick="processBuilderJson()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black py-4 rounded-xl text-lg shadow-lg transition-all flex items-center justify-center space-x-2 transform hover:-translate-y-1">
+                        <span class="text-2xl">🎮</span>
+                        <span>Launch Custom Arcade</span>
+                    </button>
+                    <div id="builder-error-msg" class="text-rose-600 bg-rose-50 border border-rose-200 p-3 rounded-lg text-sm font-bold text-center hidden"></div>
+                </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= VIEW 2: PLAYABLE ARCADE ENGINE ================= -->
+        <section id="view-arcade" class="tab-view space-y-6 hidden">
+            <!-- Arcade Game Switcher Bar -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <span class="bg-whsblue-50 text-whsblue-700 border border-whsblue-200 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider whitespace-nowrap shrink-0">
+                        Suite: <span id="active-suite-topic-label" class="text-whsblue-900">—</span>
+                    </span>
+
+                    <div class="flex items-center space-x-3 text-xs font-semibold">
+                    <button onclick="generateShareLink()" class="bg-whsblue-700 hover:bg-whsblue-800 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1">
+                        <span>🔗 Share with Students</span>
+                    </button>
+                    <button onclick="downloadSuiteAsHtml()" class="bg-whsgold-600 hover:bg-whsgold-700 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1">
+                        <span>📥 Download HTML</span>
+                    </button>
+                    <button onclick="restartCurrentGame()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1">
+                        <span>🔄 Restart Game</span>
+                    </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Suite progress</span>
+                    <div class="flex-grow bg-slate-100 rounded-full h-2 overflow-hidden">
+                        <div id="suite-progress-fill" class="bg-whsgold-500 h-full transition-all duration-500" style="width:0%"></div>
+                    </div>
+                    <span id="suite-progress-label" class="text-[10px] font-bold text-slate-500 whitespace-nowrap">0/0 games explored</span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-bold text-slate-500">
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-whsblue-500"></span>Recall</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Vocab</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span>Classification</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span>Logic</span>
+                </div>
+
+                <div class="flex flex-wrap gap-2" id="arcade-subtabs-container">
+                    <!-- Sub-tabs injected dynamically based on enabled games; wraps onto multiple lines -->
+                </div>
+            </div>
+
+            <!-- Share Link Box -->
+            <div id="share-link-box" class="hidden bg-whsblue-50 border border-whsblue-200 rounded-2xl p-4 space-y-2">
+                <p class="text-xs font-bold text-whsblue-900">Send this link to students — it opens straight into this exact game suite, no sign-in needed:</p>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" id="share-link-input" readonly onclick="this.select()" class="flex-grow bg-white border border-whsblue-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-700 shadow-inner">
+                    <button onclick="copyShareLink()" class="shrink-0 bg-whsblue-700 hover:bg-whsblue-800 text-white font-bold px-4 py-2 rounded-lg text-xs whitespace-nowrap transition-colors">📋 Copy Link</button>
+                </div>
+                <p class="text-[10px] text-whsblue-700">Works best shared via Google Classroom, email, or your LMS. Very large game suites make for a long link — if it looks unwieldy, trim the number of game modes enabled below.</p>
+            </div>
+
+            <!-- Viewport Container for Mini Game -->
+            <div id="active-game-viewport" class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm min-h-[480px] flex flex-col justify-between">
+                <!-- Mini game UI rendered dynamically -->
+            </div>
+        </section>
+
+        <!-- ================= VIEW 4: PLAYER ANALYTICS ================= -->
+        <section id="view-analytics" class="tab-view space-y-8 hidden">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="max-w-3xl">
+                    <span class="text-xs font-bold text-whsblue-600 uppercase tracking-wider">Pedagogical Analytics</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1 mb-2">Cognitive Mastery & Game Performance</h2>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Evaluates accuracy, cognitive taxonomy depth according to Bloom's taxonomy, and mechanics accuracy.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs text-slate-400 font-bold uppercase">Total Items</span>
+                    <div id="stat-total-questions" class="text-2xl font-black text-slate-900 mt-1 font-mono">0</div>
+                    <span class="text-[10px] text-slate-500">Completed interactions</span>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs text-slate-400 font-bold uppercase">Accuracy Rate</span>
+                    <div id="stat-accuracy-rate" class="text-2xl font-black text-emerald-600 mt-1 font-mono">0%</div>
+                    <span class="text-[10px] text-slate-500">Correct responses</span>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs text-slate-400 font-bold uppercase">Active Streak</span>
+                    <div id="stat-current-streak" class="text-2xl font-black text-amber-500 mt-1 font-mono">0</div>
+                    <span class="text-[10px] text-slate-500">Consecutive correct</span>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs text-slate-400 font-bold uppercase">Domain Rank</span>
+                    <div id="stat-mastery-level" class="text-2xl font-black text-whsblue-600 mt-1 font-mono">Novice</div>
+                    <span class="text-[10px] text-slate-500">Based on total score</span>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Bloom's Taxonomy Radar -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-slate-900 text-base mb-1">Bloom's Taxonomy Cognitive Depth</h3>
+                    <p class="text-xs text-slate-500 mb-4">Mastery spread across educational cognition levels.</p>
+                    <div class="chart-container">
+                        <canvas id="bloomRadarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Game Accuracy Bar -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-slate-900 text-base mb-1">Game Mode Accuracy Comparison</h3>
+                    <p class="text-xs text-slate-500 mb-4">Percentage of correct answers across enabled game modes.</p>
+                    <div class="chart-container">
+                        <canvas id="gameAccuracyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Student Welcome Overlay (shown when a shared game-suite link is opened) -->
+    <div id="welcome-overlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-gradient-to-br from-whsblue-800 via-whsblue-700 to-whsblue-900"></div>
+        <svg class="absolute inset-0 w-full h-full z-0 pointer-events-none contour-banner-bg" viewBox="0 0 1200 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M0,400 C 200,300 400,500 600,400 S 1000,300 1200,400" stroke="#d1e6f6" stroke-width="2" fill="none"/>
+            <path d="M0,500 C 200,400 400,600 600,500 S 1000,400 1200,500" stroke="#d1e6f6" stroke-width="1.5" fill="none"/>
+            <path d="M0,300 C 200,200 400,400 600,300 S 1000,200 1200,300" stroke="#d1e6f6" stroke-width="1.5" fill="none"/>
+        </svg>
+        <div class="welcome-in relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center space-y-5 border-4 border-whsgold-400">
+            <div class="text-6xl welcome-bounce">🎮</div>
+            <div>
+                <p id="welcome-context-label" class="text-xs font-bold text-whsblue-500 uppercase tracking-wider">Game Challenge</p>
+                <h2 id="welcome-topic-label" class="text-2xl sm:text-3xl font-black text-whsblue-900 mt-1">Topic</h2>
+            </div>
+            <p class="text-slate-600 text-sm font-medium">Your teacher built this set of games just for you. Ready to see what you know?</p>
+            <button onclick="dismissWelcomeOverlay()" class="w-full bg-whsgold-600 hover:bg-whsgold-700 active:scale-95 text-white font-black py-4 rounded-xl text-lg shadow-lg transition-all transform hover:-translate-y-0.5">▶ Let's Play!</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            Arcade AI Engine • Multi-Game Generation Platform
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Engine -->
+    <script>
+        // Global Audio Context & UI Toast System
+        let audioCtx = null;
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 px-6 py-3 rounded-xl shadow-2xl text-sm font-bold z-[100] transform transition-all translate-y-10 opacity-0 bg-slate-900 text-white';
+            toast.innerText = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ---------- Dark Mode + Sound Preferences (persisted per-browser via localStorage) ----------
+        function applyDarkMode(enabled) {
+            document.documentElement.classList.toggle('dark', enabled);
+            const btn = document.getElementById('dark-toggle-btn');
+            if (btn) btn.innerText = enabled ? '☀️' : '🌙';
+            try { localStorage.setItem('arcade_ai_dark_mode', enabled ? '1' : '0'); } catch (e) { /* localStorage unavailable — preference just won't persist */ }
+        }
+
+        function toggleDarkMode() {
+            applyDarkMode(!document.documentElement.classList.contains('dark'));
+        }
+
+        function applySoundPref(enabled) {
+            soundEnabled = enabled;
+            const btn = document.getElementById('sound-toggle-btn');
+            if (btn) btn.innerText = enabled ? '🔊' : '🔇';
+            try { localStorage.setItem('arcade_ai_sound', enabled ? '1' : '0'); } catch (e) { /* localStorage unavailable — preference just won't persist */ }
+        }
+
+        function toggleSound() {
+            applySoundPref(!soundEnabled);
+            if (soundEnabled) playSound('click');
+        }
+
+        function loadDisplayPrefs() {
+            try {
+                applyDarkMode(localStorage.getItem('arcade_ai_dark_mode') === '1');
+                applySoundPref(localStorage.getItem('arcade_ai_sound') !== '0'); // sound defaults on
+            } catch (e) {
+                // localStorage blocked (e.g. private browsing) — just use the defaults already set.
+            }
+        }
+
+        // ---------- Suite Progress + Confetti (a bit more spectacle once a suite is launched) ----------
+        function updateSuiteProgress() {
+            const fill = document.getElementById('suite-progress-fill');
+            const label = document.getElementById('suite-progress-label');
+            if (!fill || !label) return;
+
+            const total = appState.enabledGames.length;
+            const played = appState.playedGames.filter(id => appState.enabledGames.includes(id)).length;
+            const pct = total > 0 ? Math.round((played / total) * 100) : 0;
+
+            fill.style.width = pct + '%';
+            label.innerText = `${played}/${total} games explored`;
+
+            if (total > 0 && played === total && !appState.suiteCelebrated) {
+                appState.suiteCelebrated = true;
+                playSound('win');
+                burstConfetti();
+                showToast("🎉 You've explored every game in this suite!");
+            }
+        }
+
+        function burstConfetti(count = 26) {
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+            const colors = ['#0f3488', '#c5a059', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6', '#06b6d4'];
+            const layer = document.createElement('div');
+            layer.style.position = 'fixed';
+            layer.style.inset = '0';
+            layer.style.pointerEvents = 'none';
+            layer.style.zIndex = '9999';
+            layer.style.overflow = 'hidden';
+            document.body.appendChild(layer);
+
+            for (let i = 0; i < count; i++) {
+                const piece = document.createElement('div');
+                const size = 6 + Math.random() * 6;
+                const duration = 1.6 + Math.random() * 1.2;
+                const drift = (Math.random() * 2 - 1) * 120;
+                piece.className = 'confetti-piece';
+                piece.style.left = (Math.random() * 100) + 'vw';
+                piece.style.width = size + 'px';
+                piece.style.height = size + 'px';
+                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                piece.style.setProperty('--drift', drift + 'px');
+                piece.style.animation = `confettiFall ${duration}s ease-in forwards`;
+                layer.appendChild(piece);
+            }
+            setTimeout(() => layer.remove(), 3200);
+        }
+
+        // Web Audio API Synthesizer (Fixed hardware exhaustion bug)
+        let soundEnabled = true;
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                if (type === 'correct') {
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+                } else if (type === 'incorrect') {
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(196, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+                } else if (type === 'win') {
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+                } else if (type === 'click') {
+                    // A short, quiet tick for lightweight UI interactions (tile picks, button selects).
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.045, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.06);
+                } else if (type === 'levelup') {
+                    // A short two-note rise for "next round" moments — smaller than the full 'win' fanfare.
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.09);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                }
+            } catch(e) {
+                console.error("Audio synthesis failed:", e);
+            }
+        }
+
+        // Category → shared navigation color (used for tabs, the game-viewport accent border, and
+        // the Step 1 mode picker). Each game also keeps its own bespoke "color" for its internal
+        // theme (buttons, prompt cards, effects) — categoryColor is purely the wayfinding signal.
+        const CATEGORY_COLORS = { Recall: 'whsblue', Vocab: 'emerald', Classification: 'purple', Logic: 'amber' };
+
+        // Definitions of all game modes
+        const GAME_METADATA = [
+            { id: 'quiz', name: 'Speed Quiz Run', icon: '⚡', category: 'Recall', bloom: 'Remember', color: 'whsblue', desc: 'Multiple choice trivia with misconception options and explanations.' },
+            { id: 'memory', name: 'Memory Match Cards', icon: '🃏', category: 'Vocab', bloom: 'Understand', color: 'emerald', desc: 'Interactive flip cards pairing key terms directly with definitions.' },
+            { id: 'scramble', name: 'Word Scramble', icon: '🔤', category: 'Vocab', bloom: 'Remember', color: 'amber', desc: 'Letter-by-letter anagram solver using contextual definition clues.' },
+            { id: 'sorting', name: 'Category Bucket Sort', icon: '📦', category: 'Classification', bloom: 'Analyze', color: 'purple', desc: 'Classify concepts into two distinct target category buckets.' },
+            { id: 'wordsearch', name: 'Spatial Word Search', icon: '🧩', category: 'Recall', bloom: 'Remember', color: 'rose', desc: '10x10 matrix word search algorithmically generated.' },
+            { id: 'timeline', name: 'Timeline Sequence', icon: '⏳', category: 'Logic', bloom: 'Analyze', color: 'cyan', desc: 'Arrange historical events, biological steps, or code in chronological order.' },
+            { id: 'truefalse', name: 'MythBuster Speed Dash', icon: '⚡', category: 'Recall', bloom: 'Evaluate', color: 'teal', desc: 'Rapid-fire True or False decision maker with countdown timer.' },
+            { id: 'cloze', name: 'Cloze Context Fill', icon: '✍️', category: 'Vocab', bloom: 'Apply', color: 'orange', desc: 'Fill key missing terminology blanks within context passages.' },
+            { id: 'oddoneout', name: 'Odd One Out Intruder', icon: '🧐', category: 'Classification', bloom: 'Evaluate', color: 'sky', desc: 'Identify the intruder concept that does not belong in the group.' },
+            { id: 'sentenceorder', name: 'Sentence Builder', icon: '🧱', category: 'Logic', bloom: 'Apply', color: 'violet', desc: 'Click shuffled words into the correct order to build a complete, accurate sentence.' },
+            { id: 'guessterm', name: 'Guess the Term', icon: '⌨️', category: 'Vocab', bloom: 'Remember', color: 'lime', desc: 'Classic letter-by-letter word guesser with a limited number of misses per term.' },
+            { id: 'muncher', name: 'Term Muncher', icon: '👾', category: 'Classification', bloom: 'Analyze', color: 'fuchsia', desc: 'Live arcade chase — move around a grid eating only the terms that fit the category while dodging wrong-answer ghosts.' },
+            { id: 'shooter', name: 'Term Shooter', icon: '🎯', category: 'Recall', bloom: 'Apply', color: 'red', desc: 'Falling-answer arcade shooter — click the correct term before it hits the ground, and dodge the decoys.' },
+            { id: 'crossword', name: 'Crossword Challenge', icon: '📰', category: 'Vocab', bloom: 'Remember', color: 'amber', desc: 'Classic interlocking crossword grid, auto-built from your topic\'s key terms and clues.' }
+        ];
+        GAME_METADATA.forEach(g => { g.categoryColor = CATEGORY_COLORS[g.category] || g.color; });
+
+        const SCHEMA_TEMPLATES = {
+            quiz: `  "quiz": [\n    { "question": "Question text here?", "options": ["Correct", "Wrong 1", "Wrong 2", "Wrong 3"], "answer": 0, "explanation": "Why this is correct." }\n  ] // Provide 10 items. The correct answer MUST always be at index 0.`,
+            memory: `  "memory": [\n    { "term": "Key Term", "def": "Definition of the term" }\n  ] // Provide 10 pairs.`,
+            scramble: `  "scramble": [\n    { "word": "UPPERCASEWORD", "hint": "Clue for the word" }\n  ] // Provide 8 words. ONE WORD ONLY per item, NO spaces.`,
+            sorting: `  "sorting": {\n    "bucketA": "Category 1 Name",\n    "bucketB": "Category 2 Name",\n    "items": [\n      { "text": "Concept 1", "bucket": "A" },\n      { "text": "Concept 2", "bucket": "B" }\n    ]\n  } // Provide 12 items mixed.`,
+            wordsearch: `  "wordsearch": {\n    "gridSize": 10,\n    "words": ["WORDONE", "WORDTWO"]\n  } // Provide 9 thematic words. UPPERCASE, NO spaces, max 8 letters each (grid is fixed at 10x10).`,
+            timeline: `  "timeline": {\n    "title": "Chronological Sequence Name",\n    "items": [\n      { "id": 1, "text": "First Step/Event" },\n      { "id": 2, "text": "Second Step/Event" }\n    ]\n  } // Provide 8 items in logical order (id 1 to 8).`,
+            truefalse: `  "truefalse": [\n    { "statement": "Fact or myth here.", "answer": true, "explanation": "Why it is true or false." }\n  ] // Provide 10 items.`,
+            cloze: `  "cloze": [\n    { "passage": "The powerhouse of the cell is the ___.", "missing": "MITOCHONDRIA", "options": ["MITOCHONDRIA", "NUCLEUS", "RIBOSOME", "GOLGI"] }\n  ] // Provide 8 passages. Options must include the missing word.`,
+            oddoneout: `  "oddoneout": [\n    { "items": ["Apple", "Banana", "Orange", "Carrot"], "intruderIdx": 3, "reason": "Carrot is a vegetable, the rest are fruits." }\n  ] // Provide 6 rounds. intruderIdx (0-3) must point to the odd one out.`,
+            sentenceorder: `  "sentenceorder": [\n    { "words": ["Word1", "Word2", "Word3", "Word4"] }\n  ] // Provide 6 sentences. Each "words" array must list the words in the CORRECT grammatical order (the game shuffles them for play). Keep each sentence 5-9 words, and topic-accurate.`,
+            guessterm: `  "guessterm": [\n    { "word": "TERM", "hint": "A short clue describing the term without giving it away" }\n  ] // Provide 8 single words. UPPERCASE, NO spaces or hyphens, max 12 letters each.`,
+            muncher: `  "muncher": [\n    { "category": "Short category or rule, e.g. \\"Fruits\\" or \\"Prime Numbers\\"", "correct": ["Term1", "Term2", "Term3", "Term4"], "incorrect": ["Term5", "Term6", "Term7", "Term8"] }\n  ] // Provide 4 rounds. Each round needs 4-6 "correct" terms that fit the category AND 4-6 "incorrect" terms that don't. Keep every term short: 1-3 words.`,
+            shooter: `  "shooter": [\n    { "prompt": "Short question or instruction, e.g. \\"Shoot the capital of France\\"", "correct": "Paris", "distractors": ["Lyon", "Berlin", "Madrid"] }\n  ] // Provide 8 rounds. Each round needs exactly ONE "correct" answer and exactly 3 "distractors". Keep every term short: 1-3 words.`,
+            crossword: `  "crossword": [\n    { "clue": "A short definition or clue for the term", "answer": "TERM" }\n  ] // Provide 8 words. Each "answer" is ONE word, UPPERCASE not required, NO spaces, 3-10 letters. Pick words that share some letters where possible so the grid interlocks well.`
+        };
+
+        // Global State & Game Pointers
+        const appState = {
+            currentTopic: "Photosynthesis",
+            score: 0,
+            streak: 0,
+            activeGame: 'quiz',
+            enabledGames: [],
+            promptSelections: ['quiz', 'memory', 'truefalse'], // Default checked in builder
+            builderSubject: null,
+            builderYear: null,
+            stats: {
+                totalQuestions: 0,
+                correctAnswers: 0,
+                blooms: { Remember: 70, Understand: 75, Apply: 60, Analyze: 55, Evaluate: 50 }
+            },
+            currentData: null,
+            playedGames: [],       // ids of games visited so far this suite session (for the progress bar)
+            suiteCelebrated: false // guards the one-off confetti burst when every game has been explored
+        };
+
+        // Mini-Game Global Index Counters
+        let quizIdx = 0;
+        let scrambleIdx = 0;
+        let tfIdx = 0;
+        let clozeIdx = 0;
+        let oddIdx = 0;
+        let soIdx = 0;       // Sentence Builder round index
+        let soPool = [];     // Sentence Builder: shuffled word chips not yet placed
+        let soBuilt = [];    // Sentence Builder: word chips placed in order so far
+        let gtIdx = 0;       // Guess the Term round index
+        let gtGuessed = [];  // Guess the Term: letters guessed so far
+        let gtWrong = 0;     // Guess the Term: wrong guesses this round
+        let memoryFlipped = [];
+        let memoryMatchedCount = 0;
+        let sortingItems = [];
+        let sortingResults = []; // Category Bucket Sort: { text, chosenBucket, correct } for items placed so far
+        let wsState = null; // Word Search: { grid, placements, foundWords, selectionStart }
+        let currentTimelineOrder = [];
+        let muncherRoundIdx = 0;         // Term Muncher round index
+        let muncherState = null;         // Term Muncher: live grid/game state for the current round
+        let muncherGhostInterval = null; // Term Muncher: setInterval id for ghost movement ticks
+        let muncherKeyHandlerAttached = false; // Term Muncher: guards against attaching the keydown listener twice
+        let shooterRoundIdx = 0; // Term Shooter round index
+        let shooterState = null; // Term Shooter: { prompt, options, lives, roundOver, roundWon, cannonX, shotInFlight }
+        let shooterKeyHandlerAttached = false; // Term Shooter: guards against attaching the keydown listener twice
+        let crosswordState = null; // Crossword: { grid, placed, size, userGrid, checked }
+
+        // UI Modal Functions - Replaced by unified Prompt Builder View
+        function initPromptBuilder() {
+            const container = document.getElementById('builder-game-toggles');
+            container.innerHTML = '';
+
+            const categories = ['Recall', 'Vocab', 'Classification', 'Logic'];
+            categories.forEach(cat => {
+                const gamesInCat = GAME_METADATA.filter(g => g.category === cat);
+                if (gamesInCat.length === 0) return;
+                const catColor = CATEGORY_COLORS[cat];
+
+                const header = document.createElement('div');
+                header.className = 'flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400 mt-3 first:mt-0 col-span-full';
+                header.innerHTML = `<span class="w-2 h-2 rounded-full bg-${catColor}-500 shrink-0"></span><span>${cat}</span>`;
+                container.appendChild(header);
+
+                gamesInCat.forEach(g => {
+                    const isChecked = appState.promptSelections.includes(g.id);
+                    const toggle = document.createElement('label');
+                    toggle.className = `flex items-center p-3 border rounded-xl cursor-pointer transition-colors ${isChecked ? `bg-${catColor}-50 border-${catColor}-300` : 'bg-white border-slate-200 hover:bg-slate-50'}`;
+                    toggle.innerHTML = `
+                        <input type="checkbox" value="${g.id}" ${isChecked ? 'checked' : ''} onchange="togglePromptSelection('${g.id}')" class="w-4 h-4 text-${catColor}-600 rounded border-slate-300 focus:ring-${catColor}-500 shrink-0">
+                        <span class="ml-3 text-sm font-bold text-slate-800">${g.icon} ${g.name}</span>
+                    `;
+                    container.appendChild(toggle);
+                });
+            });
+            buildDynamicPrompt();
+        }
+
+        function togglePromptSelection(gameId) {
+            if (appState.promptSelections.includes(gameId)) {
+                appState.promptSelections = appState.promptSelections.filter(id => id !== gameId);
+            } else {
+                appState.promptSelections.push(gameId);
+            }
+            initPromptBuilder(); // re-render styles
+        }
+
+        function selectAllGames(forceSelect) {
+            if (forceSelect) {
+                appState.promptSelections = GAME_METADATA.map(g => g.id);
+            } else {
+                appState.promptSelections = [];
+            }
+            initPromptBuilder();
+        }
+
+        // Subject & Year Level Selection (Step 1)
+        function selectBuilderSubject(subject, btnEl) {
+            appState.builderSubject = subject;
+            document.querySelectorAll('#builder-subject-buttons .year-btn').forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+            playSound('click');
+            buildDynamicPrompt();
+        }
+
+        function selectBuilderYear(year, btnEl) {
+            appState.builderYear = year;
+            document.querySelectorAll('#builder-year-buttons .year-btn').forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+            playSound('click');
+            buildDynamicPrompt();
+        }
+
+        function buildDynamicPrompt() {
+            const topic = document.getElementById('builder-topic').value || "General Knowledge";
+            const subject = appState.builderSubject;
+            const year = appState.builderYear;
+            const sourceContent = document.getElementById('builder-content').value.trim();
+
+            const audience = year && subject ? `${year} ${subject} students`
+                : year ? `${year} students`
+                : subject ? `${subject} students`
+                : "students";
+
+            let promptText = `Act as an expert${subject ? ' ' + subject : ''} curriculum designer creating content for ${audience}. I need an interactive game suite about: "${topic}".\n\n`;
+
+            if (sourceContent) {
+                promptText += `Base every question, term, and passage specifically on the source material below — do not invent facts beyond what it covers or reasonably supports:\n"""\n${sourceContent}\n"""\n\n`;
+            }
+
+            promptText += `Generate a highly accurate, structured JSON object containing questions, vocabulary, and logic puzzles specifically for this topic${sourceContent ? ', drawn directly from the source material above' : ''}.\n`;
+            promptText += `Calibrate vocabulary, sentence complexity, and question difficulty to New Zealand curriculum expectations for ${audience}${year ? ' (use the relevant NCEA achievement standard level where applicable)' : ''}.\n`;
+            promptText += `DO NOT include any conversational text or markdown formatting outside of the JSON. Output ONLY valid JSON matching this exact schema:\n\n`;
+            
+            promptText += `{\n  "topic": "${topic}",\n`;
+            
+            const selectedSchemas = appState.promptSelections.map(id => SCHEMA_TEMPLATES[id]);
+            promptText += selectedSchemas.join(`,\n\n`);
+            promptText += `\n}`;
+
+            document.getElementById('dynamic-prompt-area').value = promptText;
+        }
+
+        function copyPromptToClipboard() {
+            const textArea = document.getElementById('dynamic-prompt-area');
+            textArea.select();
+            document.execCommand("copy");
+        }
+
+        function copyDynamicPrompt() {
+            copyPromptToClipboard();
+            showToast("📋 Prompt copied! Paste this into ChatGPT, Gemini, or Claude.");
+        }
+
+        function openAiTab(url, name) {
+            copyPromptToClipboard();
+            window.open(url, '_blank', 'noopener');
+            showToast(`📋 Prompt copied — opening ${name}. Paste with Ctrl/Cmd+V!`);
+        }
+
+        function loadGameSuite(parsedData) {
+            // Extract topic and enabled games based on what keys exist in the JSON
+            if (!parsedData.topic) {
+                throw new Error("Invalid schema: Missing 'topic' key.");
+            }
+
+            appState.currentTopic = parsedData.topic;
+            appState.currentData = parsedData;
+
+            // Enable only the games that the AI provided data for
+            appState.enabledGames = Object.keys(parsedData).filter(k => k !== 'topic' && GAME_METADATA.find(g => g.id === k));
+
+            if (appState.enabledGames.length === 0) {
+                throw new Error("No valid game data found in the JSON.");
+            }
+
+            appState.activeGame = appState.enabledGames[0]; // Set first available game as active
+            appState.playedGames = [];
+            appState.suiteCelebrated = false;
+
+            resetGameStates();
+            updateTopicHeader();
+        }
+
+        function processBuilderJson() {
+            const rawJson = document.getElementById('builder-json-import').value.trim();
+            const errorEl = document.getElementById('builder-error-msg');
+            errorEl.classList.add('hidden');
+            
+            if (!rawJson) {
+                errorEl.innerText = "Error: Paste JSON code from the AI first!";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                // Strip markdown formatting if the LLM included it (e.g. ```json ... ```)
+                let cleanJson = rawJson.replace(/^```json\s*/i, '').replace(/```\s*$/, '');
+                
+                const parsedData = JSON.parse(cleanJson);
+                loadGameSuite(parsedData);
+                showToast("✨ Custom Game Loaded Successfully!");
+                
+                // Clear the import box for next time
+                document.getElementById('builder-json-import').value = '';
+                
+                // Switch to arcade tab
+                switchTab('arcade');
+
+            } catch (e) {
+                console.error(e);
+                errorEl.innerText = `Error parsing JSON: ${e.message}`;
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        // ---------- Reset / Clear Session ----------
+        function resetSession() {
+            if (appState.currentData && !confirm("This clears the loaded game suite, score, and streak, and returns to a blank builder. Continue?")) {
+                return;
+            }
+
+            appState.currentData = null;
+            appState.enabledGames = [];
+            appState.activeGame = 'quiz';
+            appState.score = 0;
+            appState.streak = 0;
+            appState.currentTopic = "No topic loaded";
+            appState.stats = {
+                totalQuestions: 0,
+                correctAnswers: 0,
+                blooms: { Remember: 70, Understand: 75, Apply: 60, Analyze: 55, Evaluate: 50 }
+            };
+            appState.playedGames = [];
+            appState.suiteCelebrated = false;
+            appState.builderSubject = null;
+            appState.builderYear = null;
+
+            document.getElementById('builder-json-import').value = '';
+            document.getElementById('builder-topic').value = '';
+            document.getElementById('builder-content').value = '';
+            document.querySelectorAll('#builder-subject-buttons .year-btn, #builder-year-buttons .year-btn').forEach(b => b.classList.remove('active'));
+
+            const shareBox = document.getElementById('share-link-box');
+            if (shareBox) shareBox.classList.add('hidden');
+            const shareInput = document.getElementById('share-link-input');
+            if (shareInput) shareInput.value = '';
+
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+
+            updateGlobalStatsUI();
+            updateTopicHeader();
+            updateSuiteProgress();
+            document.getElementById('nav-active-count-badge').innerText = '0 Active';
+            buildDynamicPrompt();
+            switchTab('promptbuilder');
+            showToast("🔄 Reset complete — ready to build a new game suite!");
+        }
+
+        // ---------- Share Link (URL-encoded, no backend needed) ----------
+        function b64EncodeUnicode(str) {
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
+        }
+        function b64DecodeUnicode(str) {
+            return decodeURIComponent(atob(str).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+        }
+        function toUrlSafeBase64(b64) {
+            return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+        function fromUrlSafeBase64(safe) {
+            let b64 = safe.replace(/-/g, '+').replace(/_/g, '/');
+            while (b64.length % 4) b64 += '=';
+            return b64;
+        }
+
+        function generateShareLink() {
+            if (!appState.currentData) {
+                showToast("⚠️ Load a game suite first, then share it.");
+                return;
+            }
+            try {
+                const payload = {
+                    data: appState.currentData,
+                    subject: appState.builderSubject || null,
+                    year: appState.builderYear || null
+                };
+                const json = JSON.stringify(payload);
+                const encoded = toUrlSafeBase64(b64EncodeUnicode(json));
+                const url = window.location.origin + window.location.pathname + '#suite=' + encoded;
+
+                const box = document.getElementById('share-link-box');
+                const input = document.getElementById('share-link-input');
+                input.value = url;
+                box.classList.remove('hidden');
+
+                input.select();
+                document.execCommand('copy');
+                showToast('🔗 Share link copied! Paste it into Google Classroom or email.');
+            } catch (e) {
+                console.error(e);
+                showToast('❌ Could not generate a share link for this game suite.');
+            }
+        }
+
+        function copyShareLink() {
+            const input = document.getElementById('share-link-input');
+            if (!input.value) return;
+            input.select();
+            document.execCommand('copy');
+            showToast('📋 Link copied!');
+        }
+
+        // Downloads the current game suite as a fully self-contained HTML file — the exact same
+        // app, with the suite's data baked in so it opens straight into the Arcade view. Unlike
+        // the share link, this needs no hosting at all: email it, drop it in Google Classroom,
+        // put it on a USB stick, whatever — opening the file is enough.
+        function downloadSuiteAsHtml() {
+            if (!appState.currentData) {
+                showToast("⚠️ Load a game suite first, then download it.");
+                return;
+            }
+            if (!window.__PRISTINE_HTML__) {
+                showToast("❌ Couldn't prepare the download — try reloading the page and trying again.");
+                return;
+            }
+            try {
+                const payload = {
+                    data: appState.currentData,
+                    subject: appState.builderSubject || null,
+                    year: appState.builderYear || null
+                };
+                // Escape "<" so a stray closing script tag inside pasted content can never break out of
+                // the injected <script> tag and corrupt the downloaded file.
+                const safeJson = JSON.stringify(payload).replace(/</g, '\\u003c');
+                const embedTag = `<script>window.__EMBEDDED_SUITE__ = ${safeJson};<\/script>\n`;
+                const html = window.__PRISTINE_HTML__.replace('<head>', '<head>\n' + embedTag);
+
+                const blob = new Blob([html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const safeTopic = (appState.currentTopic || 'game-suite').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `arcade-ai-${safeTopic || 'game-suite'}.html`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 2000);
+
+                showToast('📥 HTML file downloaded! Open it anywhere — no internet or hosting needed.');
+            } catch (e) {
+                console.error(e);
+                showToast('❌ Something went wrong generating the download.');
+            }
+        }
+
+        function loadSuitePayload(payload) {
+            // Support both the current wrapped format ({data, subject, year}) and a
+            // bare game-data object, in case an older-format link/file is ever opened.
+            const parsedData = (payload && payload.data) ? payload.data : payload;
+            loadGameSuite(parsedData);
+            enterStudentMode(payload && payload.subject, payload && payload.year);
+            switchTab('arcade');
+            showWelcomeOverlay(parsedData.topic, payload && payload.subject, payload && payload.year);
+        }
+
+        function checkForSharedSuite() {
+            // 1. A suite baked directly into a downloaded HTML file takes priority — it means
+            //    this exact file was opened specifically to play that suite.
+            if (window.__EMBEDDED_SUITE__) {
+                try {
+                    loadSuitePayload(window.__EMBEDDED_SUITE__);
+                    return true;
+                } catch (e) {
+                    console.error("Failed to load embedded suite:", e);
+                    showToast('⚠️ Could not load the embedded game data in this file.');
+                    return false;
+                }
+            }
+
+            // 2. Otherwise, check for a "Share with Students" link (#suite= in the URL hash).
+            const hash = window.location.hash;
+            if (!hash || !hash.startsWith('#suite=')) return false;
+
+            try {
+                const encoded = hash.substring(7);
+                const json = b64DecodeUnicode(fromUrlSafeBase64(encoded));
+                const payload = JSON.parse(json);
+                loadSuitePayload(payload);
+                return true;
+            } catch (e) {
+                console.error("Failed to load shared suite:", e);
+                showToast('⚠️ Could not load the shared game link — it may be corrupted or incomplete.');
+                return false;
+            }
+        }
+
+        // ---------- Student Mode: a simpler, more playful shell for shared links ----------
+        function enterStudentMode() {
+            appState.studentMode = true;
+            const teacherTab = document.getElementById('tab-promptbuilder');
+            if (teacherTab) teacherTab.classList.add('hidden');
+            const badge = document.getElementById('header-version-badge');
+            if (badge) badge.classList.add('hidden');
+            const tagline = document.getElementById('header-tagline');
+            if (tagline) tagline.innerText = 'Game Challenge — good luck!';
+        }
+
+        function showWelcomeOverlay(topic, subject, year) {
+            const contextLabel = document.getElementById('welcome-context-label');
+            const topicLabel = document.getElementById('welcome-topic-label');
+            const contextParts = [subject, year].filter(Boolean);
+            contextLabel.innerText = contextParts.length ? contextParts.join(' · ') : 'Game Challenge';
+            topicLabel.innerText = topic;
+            document.getElementById('welcome-overlay').classList.remove('hidden');
+        }
+
+        function dismissWelcomeOverlay() {
+            document.getElementById('welcome-overlay').classList.add('hidden');
+        }
+
+        function resetGameStates() {
+            quizIdx = 0;
+            scrambleIdx = 0;
+            tfIdx = 0;
+            clozeIdx = 0;
+            oddIdx = 0;
+            soIdx = 0;
+            soPool = [];
+            soBuilt = [];
+            gtIdx = 0;
+            gtGuessed = [];
+            gtWrong = 0;
+            memoryFlipped = [];
+            memoryMatchedCount = 0;
+            sortingItems = [];
+            sortingResults = [];
+            wsState = null;
+            currentTimelineOrder = [];
+            muncherRoundIdx = 0;
+            muncherState = null;
+            clearInterval(muncherGhostInterval);
+            muncherGhostInterval = null;
+            shooterRoundIdx = 0;
+            shooterState = null;
+            crosswordState = null;
+        }
+
+        // Navigation Controller
+        function switchTab(tabId) {
+            // Stop the Term Muncher ghost timer whenever the user navigates away from it
+            clearInterval(muncherGhostInterval);
+
+            document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('border-whsgold-500', 'text-whsblue-800', 'font-extrabold');
+                el.classList.add('border-transparent', 'text-slate-600', 'font-semibold');
+            });
+
+            const targetView = document.getElementById('view-' + tabId);
+            if (targetView) targetView.classList.remove('hidden');
+
+            const activeBtn = document.getElementById('tab-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('border-transparent', 'text-slate-600', 'font-semibold');
+                activeBtn.classList.add('border-whsgold-500', 'text-whsblue-800', 'font-extrabold');
+            }
+
+            if (tabId === 'arcade') {
+                if(appState.enabledGames.length > 0) {
+                    renderArcadeSubtabs();
+                    renderActiveMiniGame();
+                } else {
+                    document.getElementById('active-game-viewport').innerHTML = `<div class="text-center py-10"><span class="text-3xl block mb-3">⚠️</span><h3 class="font-bold text-slate-800">No games loaded.</h3><p class="text-slate-500 text-sm">Please generate a prompt and import JSON first.</p></div>`;
+                    document.getElementById('arcade-subtabs-container').innerHTML = '';
+                    document.getElementById('nav-active-count-badge').innerText = '0 Active';
+                }
+            } else if (tabId === 'analytics') {
+                renderAnalyticsCharts();
+            }
+        }
+
+        // Give the game viewport a colored top border matching the active game's own accent color —
+        // a cheap, systemic way to make every game feel visually distinct rather than sitting in an
+        // identical plain white card regardless of which one is being played. Uses inline styles
+        // rather than a Tailwind class so it doesn't depend on how the CDN happens to order
+        // same-specificity border-color utilities internally.
+        const GAME_ACCENT_HEX = {
+            whsblue: '#2f56a8', emerald: '#10b981', amber: '#f59e0b', purple: '#a855f7',
+            rose: '#f43f5e', cyan: '#06b6d4', teal: '#14b8a6', orange: '#f97316',
+            sky: '#0ea5e9', violet: '#8b5cf6', lime: '#84cc16', fuchsia: '#d946ef', red: '#ef4444'
+        };
+        function applyGameAccentBorder(gameType) {
+            const container = document.getElementById('active-game-viewport');
+            if (!container) return;
+            const meta = GAME_METADATA.find(g => g.id === gameType);
+            const hex = meta && GAME_ACCENT_HEX[meta.categoryColor];
+            container.style.borderTopWidth = hex ? '4px' : '';
+            container.style.borderTopColor = hex || '';
+        }
+
+        // Render Arcade Subtabs dynamically based on enabled games
+        function renderArcadeSubtabs() {
+            const container = document.getElementById('arcade-subtabs-container');
+            container.innerHTML = '';
+
+            const enabledMeta = GAME_METADATA.filter(g => appState.enabledGames.includes(g.id));
+            if (enabledMeta.length === 0) {
+                container.innerHTML = '<span class="text-xs text-rose-500 font-bold">No games enabled. Enable games in Chooser!</span>';
+                return;
+            }
+
+            // Ensure active game is valid
+            if (!appState.enabledGames.includes(appState.activeGame)) {
+                appState.activeGame = enabledMeta[0].id;
+            }
+
+            enabledMeta.forEach(g => {
+                const isActive = appState.activeGame === g.id;
+                const btn = document.createElement('button');
+                btn.id = 'subtab-' + g.id;
+                btn.onclick = () => { 
+                    appState.activeGame = g.id; 
+                    resetGameStates();
+                    renderArcadeSubtabs(); 
+                    renderActiveMiniGame(); 
+                };
+                btn.className = `arcade-subtab font-bold px-3.5 py-2 rounded-xl text-xs transition-all flex items-center space-x-1.5 whitespace-nowrap border ${isActive ? `bg-${g.categoryColor}-600 text-white border-${g.categoryColor}-600 shadow-md scale-105` : `bg-${g.categoryColor}-50 text-${g.categoryColor}-700 border-${g.categoryColor}-200 hover:bg-${g.categoryColor}-100`}`;
+                btn.innerHTML = `<span>${g.icon} ${g.name}</span>`;
+                container.appendChild(btn);
+            });
+
+            document.getElementById('nav-active-count-badge').innerText = `${enabledMeta.length} Active`;
+        }
+
+        function restartCurrentGame() {
+            resetGameStates();
+            renderActiveMiniGame();
+        }
+
+        // Dynamic Mini Game Viewport Dispatcher
+        function renderActiveMiniGame() {
+            const container = document.getElementById('active-game-viewport');
+            const gameType = appState.activeGame;
+
+            if (gameType && !appState.playedGames.includes(gameType)) {
+                appState.playedGames.push(gameType);
+            }
+            updateSuiteProgress();
+            applyGameAccentBorder(gameType);
+
+            // Re-trigger the entrance animation on every game/round render
+            container.classList.remove('game-enter');
+            void container.offsetWidth; // force reflow so the animation replays
+            container.classList.add('game-enter');
+
+            if (gameType === 'quiz') renderQuizGame(container);
+            else if (gameType === 'memory') renderMemoryGame(container);
+            else if (gameType === 'scramble') renderScrambleGame(container);
+            else if (gameType === 'sorting') renderSortingGame(container);
+            else if (gameType === 'wordsearch') renderWordSearchGame(container);
+            else if (gameType === 'timeline') renderTimelineGame(container);
+            else if (gameType === 'truefalse') renderTrueFalseGame(container);
+            else if (gameType === 'cloze') renderClozeGame(container);
+            else if (gameType === 'oddoneout') renderOddOneOutGame(container);
+            else if (gameType === 'sentenceorder') renderSentenceOrderGame(container);
+            else if (gameType === 'guessterm') renderGuessTermGame(container);
+            else if (gameType === 'muncher') renderMuncherGame(container);
+            else if (gameType === 'shooter') renderShooterGame(container);
+            else if (gameType === 'crossword') renderCrosswordGame(container);
+        }
+
+        function updateTopicHeader() {
+            document.getElementById('global-topic-name').innerText = appState.currentTopic;
+            document.getElementById('active-suite-topic-label').innerText = appState.currentTopic;
+        }
+
+        // ================= GAME ENGINE IMPLEMENTATIONS =================
+
+        // 1. SPEED QUIZ
+        function renderQuizGame(container) {
+            const quizList = appState.currentData.quiz || [];
+            if (quizIdx >= quizList.length) {
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-6">
+                        <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-black text-3xl mx-auto">🎉</div>
+                        <div>
+                            <h3 class="text-2xl font-black text-slate-900">Speed Quiz Completed!</h3>
+                            <p class="text-xs text-slate-500 mt-1">Mastered trivia questions for <span class="font-bold text-whsblue-600">${appState.currentTopic}</span></p>
+                        </div>
+                        <button onclick="quizIdx=0; renderActiveMiniGame();" class="bg-whsblue-600 hover:bg-whsblue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md transition-all">Replay Quiz</button>
+                    </div>
+                `;
+                return;
+            }
+            const q = quizList[quizIdx];
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-whsblue-600 uppercase tracking-wider">Speed Quiz • Question ${quizIdx + 1} of ${quizList.length}</span>
+                        <span class="text-xs bg-whsblue-50 text-whsblue-700 px-2.5 py-1 rounded-full font-bold">${appState.currentTopic}</span>
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-black text-slate-900 leading-snug">${q.question}</h3>
+                    <div class="grid grid-cols-1 gap-3 pt-2">
+                        ${[...q.options].sort(() => Math.random() - 0.5).map((opt, i) => {
+                            // Find original index to verify correct answer since we shuffled
+                            const originalIdx = q.options.indexOf(opt);
+                            return `
+                                <button onclick="handleQuizAnswer(${originalIdx})" class="quiz-opt-btn bg-slate-50 hover:bg-whsblue-50 hover:border-whsblue-300 border border-slate-200 p-4 rounded-xl text-left text-sm font-semibold text-slate-800 transition-all flex items-center justify-between">
+                                    <span>${opt}</span>
+                                    <span class="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center text-xs text-slate-400 font-mono">${String.fromCharCode(65 + i)}</span>
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+                    <div id="quiz-feedback-box" class="hidden p-4 rounded-xl text-xs space-y-2"></div>
+                </div>
+                <div class="pt-6 border-t border-slate-100 flex justify-between items-center text-xs">
+                    <span class="text-slate-400 font-medium">Select the best answer.</span>
+                    <button id="quiz-next-btn" onclick="quizIdx++; renderActiveMiniGame();" class="hidden bg-whsblue-600 hover:bg-whsblue-700 text-white font-bold px-4 py-2 rounded-xl transition-all">Next Question ➔</button>
+                </div>
+            `;
+        }
+
+        function handleQuizAnswer(selectedIdx) {
+            const q = appState.currentData.quiz[quizIdx];
+            const feedbackBox = document.getElementById('quiz-feedback-box');
+            const nextBtn = document.getElementById('quiz-next-btn');
+            document.querySelectorAll('.quiz-opt-btn').forEach(b => b.disabled = true);
+            appState.stats.totalQuestions++;
+
+            if (selectedIdx === q.answer) {
+                playSound('correct');
+                appState.score += 100 + (appState.streak * 20);
+                appState.streak++;
+                appState.stats.correctAnswers++;
+                feedbackBox.className = "p-4 rounded-xl text-xs space-y-1 bg-emerald-50 border border-emerald-200 text-emerald-900 block";
+                feedbackBox.innerHTML = `<div class="font-bold">✅ Correct! (+100 pts)</div><div>${q.explanation}</div>`;
+            } else {
+                playSound('incorrect');
+                appState.streak = 0;
+                feedbackBox.className = "p-4 rounded-xl text-xs space-y-1 bg-rose-50 border border-rose-200 text-rose-900 block";
+                feedbackBox.innerHTML = `<div class="font-bold">❌ Incorrect</div><div>${q.explanation}</div>`;
+            }
+            updateGlobalStatsUI();
+            nextBtn.classList.remove('hidden');
+        }
+
+        // 2. MEMORY MATCH CARDS
+        function renderMemoryGame(container) {
+            const pairs = appState.currentData.memory || [];
+            let cards = [];
+            pairs.forEach((p, i) => {
+                cards.push({ id: i, text: p.term });
+                cards.push({ id: i, text: p.def });
+            });
+            cards.sort(() => Math.random() - 0.5);
+            memoryFlipped = []; 
+            memoryMatchedCount = 0;
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Memory Match Cards</span>
+                        <span class="text-xs text-slate-500 font-semibold">Matched: <span id="mem-matched-val">0</span> / ${pairs.length}</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                        ${cards.map((c, idx) => `
+                            <div onclick="flipMemoryCard(${idx}, ${c.id})" id="mem-card-${idx}" class="mem-card bg-gradient-to-br from-emerald-900 to-slate-900 hover:from-emerald-800 text-white rounded-xl h-24 p-3 flex items-center justify-center text-center cursor-pointer transition-all border border-emerald-800/50 shadow-sm">
+                                <span class="card-inner-text text-slate-500 font-bold text-xl">?</span>
+                                <span class="card-real-text hidden text-xs font-semibold leading-snug text-whsblue-200">${c.text}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function flipMemoryCard(idx, cardPairId) {
+            const cardEl = document.getElementById(`mem-card-${idx}`);
+            if (!cardEl || cardEl.classList.contains('matched') || memoryFlipped.some(f => f.idx === idx)) return;
+
+            cardEl.querySelector('.card-inner-text').classList.add('hidden');
+            cardEl.querySelector('.card-real-text').classList.remove('hidden');
+            cardEl.className = "mem-card bg-whsblue-700 text-white rounded-xl h-24 p-3 flex items-center justify-center text-center shadow-md border-2 border-whsblue-400";
+
+            memoryFlipped.push({ idx, cardPairId, el: cardEl });
+
+                if (memoryFlipped.length === 2) {
+                const [c1, c2] = memoryFlipped;
+                if (c1.cardPairId === c2.cardPairId && c1.idx !== c2.idx) {
+                    playSound('correct');
+                    c1.el.className = "mem-card bg-emerald-600 text-white rounded-xl h-24 p-3 flex items-center justify-center text-center matched opacity-80";
+                    c2.el.className = "mem-card bg-emerald-600 text-white rounded-xl h-24 p-3 flex items-center justify-center text-center matched opacity-80";
+                    memoryMatchedCount++;
+                    const pairsTotal = appState.currentData.memory ? appState.currentData.memory.length : 0;
+                    document.getElementById('mem-matched-val').innerText = memoryMatchedCount;
+                    appState.score += 150;
+                    updateGlobalStatsUI();
+                    memoryFlipped = [];
+
+                    if (pairsTotal > 0 && memoryMatchedCount === pairsTotal) {
+                        setTimeout(() => {
+                            const container = document.getElementById('active-game-viewport');
+                            if (!container) return;
+                            container.innerHTML = `
+                                <div class="text-center py-8 space-y-4">
+                                    <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-black text-3xl mx-auto">🎉</div>
+                                    <h3 class="text-2xl font-black text-slate-900">Memory Match Complete!</h3>
+                                    <p class="text-xs text-slate-500">All ${pairsTotal} pairs matched.</p>
+                                    <button onclick="renderActiveMiniGame();" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all">Play Memory Match Again</button>
+                                </div>
+                            `;
+                        }, 500);
+                    }
+                } else {
+                    playSound('incorrect');
+                    setTimeout(() => {
+                        c1.el.className = "mem-card bg-gradient-to-br from-emerald-900 to-slate-900 text-white rounded-xl h-24 p-3 flex items-center justify-center text-center cursor-pointer border border-emerald-800/50";
+                        c2.el.className = "mem-card bg-gradient-to-br from-emerald-900 to-slate-900 text-white rounded-xl h-24 p-3 flex items-center justify-center text-center cursor-pointer border border-emerald-800/50";
+                        c1.el.querySelector('.card-inner-text').classList.remove('hidden');
+                        c1.el.querySelector('.card-real-text').classList.add('hidden');
+                        c2.el.querySelector('.card-inner-text').classList.remove('hidden');
+                        c2.el.querySelector('.card-real-text').classList.add('hidden');
+                        memoryFlipped = [];
+                    }, 800);
+                }
+            }
+        }
+
+        // 3. WORD SCRAMBLE
+        let pickedTiles = [];
+        function renderScrambleGame(container) {
+            const scrambleList = appState.currentData.scramble || [];
+            if (scrambleIdx >= scrambleList.length) {
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-black text-3xl mx-auto">🎉</div>
+                        <h3 class="text-2xl font-black text-slate-900">All Words Unscrambled!</h3>
+                        <button onclick="scrambleIdx=0; renderActiveMiniGame();" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all">Play Scramble Again</button>
+                    </div>
+                `;
+                return;
+            }
+            const item = scrambleList[scrambleIdx];
+            const targetWord = item.word.toUpperCase();
+            const letters = targetWord.split('').sort(() => Math.random() - 0.5);
+            pickedTiles = [];
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-amber-600 uppercase tracking-wider">Word Scramble • ${scrambleIdx + 1} of ${scrambleList.length}</span>
+                    </div>
+                    <div class="space-y-1"><span class="text-xs text-slate-400 font-bold uppercase">Clue:</span><p class="text-base font-bold text-slate-800">${item.hint}</p></div>
+                    <div class="space-y-3 pt-2">
+                        <div class="flex flex-wrap justify-center gap-2 min-h-[52px]" id="scramble-slots"></div>
+                        <div class="flex flex-wrap justify-center gap-2 pt-4" id="scramble-pool">
+                            ${letters.map((char, i) => `
+                                <button onclick="pickScrambleTile(${i}, '${char}')" id="tile-${i}" class="w-12 h-12 rounded-xl bg-slate-900 hover:bg-amber-600 text-white font-black text-lg shadow-sm transition-all">${char}</button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function pickScrambleTile(idx, char) {
+            const tileBtn = document.getElementById(`tile-${idx}`);
+            if (!tileBtn || tileBtn.disabled) return;
+            tileBtn.disabled = true; tileBtn.classList.add('opacity-30');
+            playSound('click');
+            pickedTiles.push({ idx, char });
+            
+            const slotBox = document.getElementById('scramble-slots');
+            slotBox.innerHTML = pickedTiles.map(p => `<div class="w-12 h-12 rounded-xl bg-amber-500 text-white font-black text-lg flex items-center justify-center">${p.char}</div>`).join('');
+
+            const targetWord = appState.currentData.scramble[scrambleIdx].word.toUpperCase();
+            if (pickedTiles.length === targetWord.length) {
+                if (pickedTiles.map(p => p.char).join('') === targetWord) {
+                    playSound('correct');
+                    appState.score += 120;
+                    updateGlobalStatsUI();
+                    setTimeout(() => { scrambleIdx++; renderActiveMiniGame(); }, 1000);
+                } else {
+                    playSound('incorrect');
+                    // Flash the wrong attempt red, then reshuffle the same word so the student can retry
+                    // instead of getting stuck with every tile disabled and no way forward.
+                    slotBox.querySelectorAll('div').forEach(el => el.classList.replace('bg-amber-500', 'bg-rose-500'));
+                    setTimeout(() => { renderActiveMiniGame(); }, 900);
+                }
+            }
+        }
+
+        // 4. CATEGORY BUCKET SORT
+        function renderSortingGame(container) {
+            const sData = appState.currentData.sorting;
+            if (sortingItems.length === 0 && sortingResults.length === 0) {
+                sortingItems = [...sData.items].sort(() => Math.random() - 0.5);
+            }
+            const current = sortingItems[0];
+            const bucketAResults = sortingResults.filter(r => r.chosenBucket === 'A');
+            const bucketBResults = sortingResults.filter(r => r.chosenBucket === 'B');
+            const resultChip = r => `
+                <div class="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg text-xs font-bold ${r.correct ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-700 border border-rose-300'}">
+                    <span>${r.text}</span><span>${r.correct ? '✅' : '❌'}</span>
+                </div>`;
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">Category Bucket Sort</span>
+                        <span class="text-xs text-slate-500 font-semibold">Remaining: <span id="sort-count-val">${sortingItems.length}</span></span>
+                    </div>
+
+                    ${current ? `
+                        <div id="sort-card-display" class="bg-gradient-to-br from-purple-900 to-slate-900 text-white p-6 rounded-2xl text-center space-y-2 shadow-md">
+                            <span class="text-[10px] text-purple-300 font-bold uppercase">Classify Concept</span>
+                            <h4 id="sort-item-text" class="text-xl font-extrabold text-white">${current.text}</h4>
+                        </div>
+                    ` : `
+                        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-6 rounded-2xl text-center font-black text-lg">
+                            🎉 Sorting Complete! ${sortingResults.filter(r => r.correct).length}/${sortingResults.length} correct.
+                        </div>
+                    `}
+
+                    <div class="grid grid-cols-2 gap-4 pt-2">
+                        <div class="space-y-2">
+                            <button onclick="classifySortItem('A')" ${current ? '' : 'disabled'} class="w-full bg-purple-50 hover:bg-purple-100 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-purple-200 p-4 rounded-2xl text-center transition-all">
+                                <span class="text-[10px] font-bold text-purple-600 uppercase block">Bucket A</span>
+                                <span class="font-extrabold text-purple-900 text-sm sm:text-base">${sData.bucketA}</span>
+                            </button>
+                            <div class="space-y-1.5">${bucketAResults.map(resultChip).join('')}</div>
+                        </div>
+                        <div class="space-y-2">
+                            <button onclick="classifySortItem('B')" ${current ? '' : 'disabled'} class="w-full bg-whsblue-50 hover:bg-whsblue-100 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-whsblue-200 p-4 rounded-2xl text-center transition-all">
+                                <span class="text-[10px] font-bold text-whsblue-600 uppercase block">Bucket B</span>
+                                <span class="font-extrabold text-whsblue-900 text-sm sm:text-base">${sData.bucketB}</span>
+                            </button>
+                            <div class="space-y-1.5">${bucketBResults.map(resultChip).join('')}</div>
+                        </div>
+                    </div>
+
+                    ${!current ? `
+                        <div class="pt-2 flex justify-center">
+                            <button onclick="sortingItems=[]; sortingResults=[]; renderActiveMiniGame();" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all">Play Sorting Again</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function classifySortItem(chosenBucket) {
+            if (sortingItems.length === 0) return;
+            const current = sortingItems.shift();
+            const correct = current.bucket === chosenBucket;
+
+            if (correct) {
+                playSound('correct');
+                appState.score += 80;
+            } else {
+                playSound('incorrect');
+            }
+            sortingResults.push({ text: current.text, chosenBucket, correct });
+            updateGlobalStatsUI();
+            renderActiveMiniGame();
+        }
+
+        // 5. SPATIAL WORD SEARCH (now with real click-to-select answer checking)
+        function placeWordSearchGrid(words) {
+            const size = 10;
+            const grid = Array(size).fill(null).map(() => Array(size).fill(''));
+            const placements = []; // { word, r, c1, c2 }
+
+            words.forEach(rawWord => {
+                const word = rawWord.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 8);
+                if (!word) return;
+                let placed = false;
+                for (let attempt = 0; attempt < 60 && !placed; attempt++) {
+                    const r = Math.floor(Math.random() * size);
+                    const c = Math.floor(Math.random() * Math.max(1, size - word.length + 1));
+                    if (c + word.length > size) continue;
+                    let fits = true;
+                    for (let i = 0; i < word.length; i++) {
+                        const existing = grid[r][c + i];
+                        if (existing && existing !== word[i]) { fits = false; break; }
+                    }
+                    if (fits) {
+                        for (let i = 0; i < word.length; i++) grid[r][c + i] = word[i];
+                        placements.push({ word, r, c1: c, c2: c + word.length - 1 });
+                        placed = true;
+                    }
+                }
+                if (!placed) {
+                    // Fallback for the rare case 60 random attempts all collided: force it onto a fresh row.
+                    const r = Math.floor(Math.random() * size);
+                    for (let i = 0; i < word.length && i < size; i++) grid[r][i] = word[i];
+                    placements.push({ word, r, c1: 0, c2: Math.min(word.length - 1, size - 1) });
+                }
+            });
+
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) if (!grid[r][c]) grid[r][c] = alphabet[Math.floor(Math.random() * alphabet.length)];
+            }
+            return { grid, placements };
+        }
+
+        function renderWordSearchGame(container) {
+            const wsData = appState.currentData.wordsearch;
+            if (!wsState) {
+                const { grid, placements } = placeWordSearchGrid(wsData.words);
+                wsState = { grid, placements, foundWords: [], selectionStart: null, lastFoundWord: null };
+            }
+            const allFound = wsState.placements.length > 0 && wsState.foundWords.length === wsState.placements.length;
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Spatial Word Search Matrix</span>
+                        <span class="text-xs text-slate-500 font-semibold">Found: ${wsState.foundWords.length} / ${wsState.placements.length}</span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-semibold">Click the first letter of a word, then click its last letter — words run left-to-right or right-to-left.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                        <div class="md:col-span-2 bg-slate-900 p-3 rounded-2xl flex justify-center shadow-inner">
+                            <div class="grid grid-cols-10 gap-1 font-mono font-black text-xs sm:text-sm" id="wordsearch-grid">
+                                ${renderWordSearchCells()}
+                            </div>
+                        </div>
+                        <div class="space-y-2 bg-slate-50 p-4 rounded-xl text-xs border border-slate-200">
+                            <span class="font-bold text-slate-800 block">Target Terms:</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${wsState.placements.map(p => `<span class="px-2 py-1 rounded font-mono font-bold border ${wsState.foundWords.includes(p.word) ? 'bg-emerald-100 border-emerald-300 text-emerald-700 line-through' : 'bg-white border-slate-200 text-slate-700'}">${p.word}</span>`).join('')}
+                            </div>
+                            ${allFound ? `<div class="pt-2"><button onclick="wsState=null; renderActiveMiniGame();" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-2 rounded-lg text-xs transition-all">🎉 Play Again</button></div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderWordSearchCells() {
+            let html = '';
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 10; c++) {
+                    const isFoundCell = wsState.placements.some(p => wsState.foundWords.includes(p.word) && p.r === r && c >= p.c1 && c <= p.c2);
+                    const isJustFound = wsState.lastFoundWord && wsState.placements.some(p => p.word === wsState.lastFoundWord && p.r === r && c >= p.c1 && c <= p.c2);
+                    const isSelected = wsState.selectionStart && wsState.selectionStart.r === r && wsState.selectionStart.c === c;
+                    let cls = 'bg-slate-800 hover:bg-rose-500 text-slate-200';
+                    if (isFoundCell) cls = 'bg-emerald-600 text-white' + (isJustFound ? ' ws-found-pulse' : '');
+                    else if (isSelected) cls = 'bg-rose-500 text-white';
+                    html += `<button onclick="handleWordSearchClick(${r},${c})" class="w-7 h-7 sm:w-8 sm:h-8 rounded ${cls} flex items-center justify-center transition-colors font-black">${wsState.grid[r][c]}</button>`;
+                }
+            }
+            return html;
+        }
+
+        function handleWordSearchClick(r, c) {
+            if (!wsState) return;
+
+            if (!wsState.selectionStart) {
+                wsState.selectionStart = { r, c };
+                document.getElementById('wordsearch-grid').innerHTML = renderWordSearchCells();
+                return;
+            }
+
+            const start = wsState.selectionStart;
+            wsState.selectionStart = null;
+
+            if (start.r !== r) {
+                // This word search only places words horizontally, so a valid selection always stays in one row.
+                playSound('incorrect');
+                document.getElementById('wordsearch-grid').innerHTML = renderWordSearchCells();
+                return;
+            }
+
+            const c1 = Math.min(start.c, c);
+            const c2 = Math.max(start.c, c);
+            const match = wsState.placements.find(p => !wsState.foundWords.includes(p.word) && p.r === r && p.c1 === c1 && p.c2 === c2);
+
+            if (match) {
+                playSound('correct');
+                wsState.foundWords.push(match.word);
+                wsState.lastFoundWord = match.word;
+                appState.score += 90;
+                updateGlobalStatsUI();
+                if (wsState.foundWords.length === wsState.placements.length) {
+                    showToast('🎉 Word Search Complete!');
+                }
+            } else {
+                playSound('incorrect');
+            }
+            document.getElementById('wordsearch-grid').innerHTML = renderWordSearchCells();
+            if (match) setTimeout(() => { wsState.lastFoundWord = null; }, 650);
+        }
+
+        // 6. TIMELINE SEQUENCE ENGINE
+        function renderTimelineGame(container) {
+            const timelineData = appState.currentData.timeline || { title: "Sequence Flow", items: [] };
+            if (!currentTimelineOrder || currentTimelineOrder.length === 0) {
+                currentTimelineOrder = [...timelineData.items].sort(() => Math.random() - 0.5);
+            }
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-cyan-600 uppercase tracking-wider">Timeline Sequence • Arrange in Correct Order</span>
+                        <span class="text-xs font-bold text-slate-500">${timelineData.title}</span>
+                    </div>
+
+                    <p class="text-xs text-slate-500">Click items to move them up or down into the correct chronological sequence from Step 1 to Last Step.</p>
+
+                    <div class="space-y-3 pt-2" id="timeline-items-list">
+                        ${renderTimelineListHTML()}
+                    </div>
+
+                    <div id="timeline-feedback" class="hidden p-3 rounded-xl text-xs text-center font-bold"></div>
+                </div>
+
+                <div class="pt-6 border-t border-slate-100 flex justify-between items-center text-xs">
+                    <span class="text-slate-400">Step 1 is at the top.</span>
+                    <button onclick="checkTimelineSequence()" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold px-5 py-2 rounded-xl transition-colors">
+                        Check Sequence Order ➔
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderTimelineListHTML() {
+            return currentTimelineOrder.map((item, idx) => `
+                <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between space-x-3">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-7 h-7 rounded-lg bg-cyan-100 text-cyan-800 font-extrabold text-xs flex items-center justify-center">${idx + 1}</span>
+                        <span class="text-xs sm:text-sm font-bold text-slate-800">${item.text}</span>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="moveTimelineItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} class="px-2 py-1 bg-white border rounded text-xs hover:bg-slate-100 disabled:opacity-30">▲</button>
+                        <button onclick="moveTimelineItem(${idx}, 1)" ${idx === currentTimelineOrder.length - 1 ? 'disabled' : ''} class="px-2 py-1 bg-white border rounded text-xs hover:bg-slate-100 disabled:opacity-30">▼</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function moveTimelineItem(idx, direction) {
+            const targetIdx = idx + direction;
+            if (targetIdx < 0 || targetIdx >= currentTimelineOrder.length) return;
+            const temp = currentTimelineOrder[idx];
+            currentTimelineOrder[idx] = currentTimelineOrder[targetIdx];
+            currentTimelineOrder[targetIdx] = temp;
+            document.getElementById('timeline-items-list').innerHTML = renderTimelineListHTML();
+        }
+
+        function checkTimelineSequence() {
+            let isCorrect = true;
+            for (let i = 0; i < currentTimelineOrder.length; i++) {
+                if (currentTimelineOrder[i].id !== i + 1) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+            const fb = document.getElementById('timeline-feedback');
+            fb.classList.remove('hidden');
+            if (isCorrect) {
+                playSound('correct');
+                appState.score += 200;
+                updateGlobalStatsUI();
+                fb.className = "p-3 rounded-xl text-xs text-center font-bold bg-emerald-50 border border-emerald-200 text-emerald-800 block";
+                fb.innerText = "🎉 Perfect Sequence Alignment! (+200 pts)";
+            } else {
+                playSound('incorrect');
+                fb.className = "p-3 rounded-xl text-xs text-center font-bold bg-rose-50 border border-rose-200 text-rose-800 block";
+                fb.innerText = "❌ Incorrect order. Rearrange the items and try again!";
+            }
+        }
+
+        // 7. MYTHBUSTER SPEED TRUE/FALSE ENGINE
+        function renderTrueFalseGame(container) {
+            const tfList = appState.currentData.truefalse || [];
+            if (tfIdx >= tfList.length) {
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="w-16 h-16 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center font-black text-3xl mx-auto">🎉</div>
+                        <h3 class="text-2xl font-black text-slate-900">MythBuster Completed!</h3>
+                        <button onclick="tfIdx=0; renderActiveMiniGame();" class="bg-teal-600 hover:bg-teal-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all">Play MythBuster Again</button>
+                    </div>
+                `;
+                return;
+            }
+            const item = tfList[tfIdx];
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-teal-600 uppercase tracking-wider">MythBuster Speed Dash • Statement ${tfIdx + 1} of ${tfList.length}</span>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-teal-900 to-slate-900 text-white p-6 rounded-2xl text-center space-y-3 shadow-md">
+                        <span class="text-[10px] text-teal-400 font-bold uppercase tracking-widest">Fact Check Statement</span>
+                        <h3 class="text-xl sm:text-2xl font-black">${item.statement}</h3>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 pt-2">
+                        <button onclick="answerTrueFalse(true)" class="bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 p-6 rounded-2xl text-center transition-all">
+                            <span class="text-2xl block mb-1">✅</span>
+                            <span class="font-black text-emerald-900 text-lg">TRUE</span>
+                        </button>
+                        <button onclick="answerTrueFalse(false)" class="bg-rose-50 hover:bg-rose-100 border-2 border-rose-200 p-6 rounded-2xl text-center transition-all">
+                            <span class="text-2xl block mb-1">❌</span>
+                            <span class="font-black text-rose-900 text-lg">FALSE</span>
+                        </button>
+                    </div>
+
+                    <div id="tf-feedback" class="hidden p-4 rounded-xl text-xs space-y-1"></div>
+                </div>
+
+                <div class="pt-6 border-t border-slate-100 flex justify-end">
+                    <button id="tf-next-btn" onclick="tfIdx++; renderActiveMiniGame();" class="hidden bg-teal-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Next Statement ➔</button>
+                </div>
+            `;
+        }
+
+        function answerTrueFalse(userChoice) {
+            const item = appState.currentData.truefalse[tfIdx];
+            const fb = document.getElementById('tf-feedback');
+            const nextBtn = document.getElementById('tf-next-btn');
+
+            fb.classList.remove('hidden');
+            if (userChoice === item.answer) {
+                playSound('correct');
+                appState.score += 100;
+                updateGlobalStatsUI();
+                fb.className = "p-4 rounded-xl text-xs bg-emerald-50 border border-emerald-200 text-emerald-900 block";
+                fb.innerHTML = `<div class="font-bold">✅ Correct Analysis!</div><div>${item.explanation}</div>`;
+            } else {
+                playSound('incorrect');
+                fb.className = "p-4 rounded-xl text-xs bg-rose-50 border border-rose-200 text-rose-900 block";
+                fb.innerHTML = `<div class="font-bold">❌ Incorrect</div><div>${item.explanation}</div>`;
+            }
+            nextBtn.classList.remove('hidden');
+        }
+
+        // 8. CLOZE CONTEXT FILL ENGINE
+        function renderClozeGame(container) {
+            const clozeList = appState.currentData.cloze || [];
+            if (clozeIdx >= clozeList.length) {
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-black text-3xl mx-auto">🎉</div>
+                        <h3 class="text-2xl font-black text-slate-900">Cloze Fill Completed!</h3>
+                        <button onclick="clozeIdx=0; renderActiveMiniGame();" class="bg-orange-600 hover:bg-orange-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all">Play Cloze Fill Again</button>
+                    </div>
+                `;
+                return;
+            }
+            const item = clozeList[clozeIdx];
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-orange-600 uppercase tracking-wider">Cloze Context Fill • Passage ${clozeIdx + 1} of ${clozeList.length}</span>
+                    </div>
+
+                    <div class="bg-orange-50/50 border border-orange-200 p-6 rounded-2xl text-slate-900 text-lg leading-relaxed font-semibold">
+                        "${item.passage}"
+                    </div>
+
+                    <div class="space-y-2 pt-2">
+                        <span class="text-xs text-slate-400 font-bold uppercase">Select the missing term:</span>
+                        <div class="grid grid-cols-2 gap-3">
+                            ${item.options.map(opt => `
+                                <button onclick="selectClozeOption('${opt}')" class="bg-slate-50 hover:bg-orange-100 border border-slate-200 p-4 rounded-xl text-sm font-bold text-slate-800 text-left transition-all">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div id="cloze-feedback" class="hidden p-3 rounded-xl text-xs font-bold text-center"></div>
+                </div>
+
+                <div class="pt-6 border-t border-slate-100 flex justify-end">
+                    <button id="cloze-next-btn" onclick="clozeIdx++; renderActiveMiniGame();" class="hidden bg-orange-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Next Passage ➔</button>
+                </div>
+            `;
+        }
+
+        function selectClozeOption(chosen) {
+            const item = appState.currentData.cloze[clozeIdx];
+            const fb = document.getElementById('cloze-feedback');
+            const nextBtn = document.getElementById('cloze-next-btn');
+
+            fb.classList.remove('hidden');
+            if (chosen === item.missing) {
+                playSound('correct');
+                appState.score += 120;
+                updateGlobalStatsUI();
+                fb.className = "p-3 rounded-xl text-xs font-bold bg-emerald-50 border border-emerald-200 text-emerald-800 block";
+                fb.innerText = `✅ Correct! "${chosen}" fits the context contextually.`;
+            } else {
+                playSound('incorrect');
+                fb.className = "p-3 rounded-xl text-xs font-bold bg-rose-50 border border-rose-200 text-rose-800 block";
+                fb.innerText = `❌ Incorrect. The missing term was "${item.missing}".`;
+            }
+            nextBtn.classList.remove('hidden');
+        }
+
+        // 9. ODD ONE OUT ENGINE
+        function renderOddOneOutGame(container) {
+            const oddList = appState.currentData.oddoneout || [];
+            if (oddIdx >= oddList.length) {
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="w-16 h-16 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center font-black text-3xl mx-auto">🎉</div>
+                        <h3 class="text-2xl font-black text-slate-900">Intruder Detection Completed!</h3>
+                        <button onclick="oddIdx=0; renderActiveMiniGame();" class="bg-sky-600 hover:bg-sky-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all">Play Odd One Out Again</button>
+                    </div>
+                `;
+                return;
+            }
+            const item = oddList[oddIdx];
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-sky-600 uppercase tracking-wider">Odd One Out • Spot the Intruder Concept</span>
+                    </div>
+
+                    <p class="text-xs text-slate-500 font-semibold">Three concepts belong to a common topic group. Click the one concept that DOES NOT belong!</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                        ${item.items.map((term, i) => `
+                            <button onclick="selectOddIntruder(${i})" class="bg-slate-50 hover:bg-sky-50 hover:border-sky-300 border border-slate-200 p-5 rounded-2xl text-left text-base font-extrabold text-slate-900 transition-all flex items-center justify-between">
+                                <span>${term}</span>
+                                <span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-mono font-bold">${i + 1}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <div id="odd-feedback" class="hidden p-4 rounded-xl text-xs space-y-1"></div>
+                </div>
+
+                <div class="pt-6 border-t border-slate-100 flex justify-end">
+                    <button id="odd-next-btn" onclick="oddIdx++; renderActiveMiniGame();" class="hidden bg-sky-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Next Challenge ➔</button>
+                </div>
+            `;
+        }
+
+        function selectOddIntruder(chosenIdx) {
+            const item = appState.currentData.oddoneout[oddIdx];
+            const fb = document.getElementById('odd-feedback');
+            const nextBtn = document.getElementById('odd-next-btn');
+
+            fb.classList.remove('hidden');
+            if (chosenIdx === item.intruderIdx) {
+                playSound('correct');
+                appState.score += 150;
+                updateGlobalStatsUI();
+                fb.className = "p-4 rounded-xl text-xs bg-emerald-50 border border-emerald-200 text-emerald-900 block";
+                fb.innerHTML = `<div class="font-bold">✅ Correct Intruder Identified!</div><div>${item.reason}</div>`;
+            } else {
+                playSound('incorrect');
+                fb.className = "p-4 rounded-xl text-xs bg-rose-50 border border-rose-200 text-rose-900 block";
+                fb.innerHTML = `<div class="font-bold">❌ Incorrect</div><div>${item.reason}</div>`;
+            }
+            nextBtn.classList.remove('hidden');
+        }
+
+        // 10. SENTENCE BUILDER ENGINE
+        function renderSentenceOrderGame(container) {
+            const list = appState.currentData.sentenceorder || [];
+            if (soIdx >= list.length) {
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="w-16 h-16 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center font-black text-3xl mx-auto">🎉</div>
+                        <h3 class="text-2xl font-black text-slate-900">Sentence Builder Completed!</h3>
+                        <button onclick="soIdx=0; soPool=[]; soBuilt=[]; renderActiveMiniGame();" class="bg-violet-600 hover:bg-violet-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all">Play Sentence Builder Again</button>
+                    </div>
+                `;
+                return;
+            }
+            const item = list[soIdx];
+
+            // Initialise a fresh shuffled pool the first time this round is rendered
+            if (soPool.length === 0 && soBuilt.length === 0) {
+                soPool = item.words.map((w, i) => ({ text: w, id: i })).sort(() => Math.random() - 0.5);
+            }
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-violet-600 uppercase tracking-wider">Sentence Builder • Sentence ${soIdx + 1} of ${list.length}</span>
+                        <button onclick="clearSentenceBuild()" class="text-[10px] font-bold text-slate-400 hover:text-violet-600 hover:underline">Clear</button>
+                    </div>
+
+                    <p class="text-xs text-slate-500 font-semibold">Click the words below, in order, to build a correct, complete sentence.</p>
+
+                    <div class="min-h-[64px] bg-violet-50 border-2 border-dashed border-violet-200 rounded-2xl p-4 flex flex-wrap gap-2 items-center">
+                        ${soBuilt.length === 0 ? '<span class="text-violet-300 text-sm font-semibold">Your sentence will appear here...</span>' : ''}
+                        ${soBuilt.map((w, i) => `
+                            <span class="bg-violet-600 text-white font-bold px-3 py-1.5 rounded-lg text-sm shadow-sm">${w.text}</span>
+                        `).join('')}
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 pt-2">
+                        ${soPool.map((w, i) => `
+                            <button onclick="pickSentenceWord(${i})" class="bg-slate-50 hover:bg-violet-50 hover:border-violet-300 border border-slate-200 px-3 py-1.5 rounded-lg text-sm font-bold text-slate-800 transition-all">${w.text}</button>
+                        `).join('')}
+                    </div>
+
+                    <div id="so-feedback" class="hidden p-4 rounded-xl text-xs space-y-1"></div>
+                </div>
+
+                <div class="pt-6 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="checkSentenceOrder()" ${soPool.length > 0 ? 'disabled' : ''} class="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all">Check Sentence</button>
+                    <button id="so-next-btn" onclick="soIdx++; soPool=[]; soBuilt=[]; renderActiveMiniGame();" class="hidden bg-violet-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Next Sentence ➔</button>
+                </div>
+            `;
+        }
+
+        function pickSentenceWord(poolIdx) {
+            const [word] = soPool.splice(poolIdx, 1);
+            soBuilt.push(word);
+            renderActiveMiniGame();
+        }
+
+        function clearSentenceBuild() {
+            const item = appState.currentData.sentenceorder[soIdx];
+            soPool = item.words.map((w, i) => ({ text: w, id: i })).sort(() => Math.random() - 0.5);
+            soBuilt = [];
+            renderActiveMiniGame();
+        }
+
+        function checkSentenceOrder() {
+            const item = appState.currentData.sentenceorder[soIdx];
+            const fb = document.getElementById('so-feedback');
+            const nextBtn = document.getElementById('so-next-btn');
+            const builtText = soBuilt.map(w => w.text).join(' ');
+            const correctText = item.words.join(' ');
+
+            fb.classList.remove('hidden');
+            if (builtText === correctText) {
+                playSound('correct');
+                appState.score += 150;
+                updateGlobalStatsUI();
+                fb.className = "p-4 rounded-xl text-xs bg-emerald-50 border border-emerald-200 text-emerald-900 block";
+                fb.innerHTML = `<div class="font-bold">✅ Perfect sentence order!</div>`;
+            } else {
+                playSound('incorrect');
+                fb.className = "p-4 rounded-xl text-xs bg-rose-50 border border-rose-200 text-rose-900 block";
+                fb.innerHTML = `<div class="font-bold">❌ Not quite right.</div><div>Correct order: "${correctText}"</div>`;
+            }
+            nextBtn.classList.remove('hidden');
+        }
+
+        // 11. GUESS THE TERM ENGINE (classic letter-guesser, lives shown as hearts)
+        const GT_MAX_WRONG = 6;
+        function renderGuessTermGame(container) {
+            const list = appState.currentData.guessterm || [];
+            if (gtIdx >= list.length) {
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="w-16 h-16 rounded-full bg-lime-100 text-lime-700 flex items-center justify-center font-black text-3xl mx-auto">🎉</div>
+                        <h3 class="text-2xl font-black text-slate-900">Guess the Term Completed!</h3>
+                        <button onclick="gtIdx=0; gtGuessed=[]; gtWrong=0; renderActiveMiniGame();" class="bg-lime-600 hover:bg-lime-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all">Play Guess the Term Again</button>
+                    </div>
+                `;
+                return;
+            }
+            const item = list[gtIdx];
+            const word = item.word.toUpperCase();
+            const uniqueLetters = [...new Set(word.replace(/[^A-Z]/g, '').split(''))];
+            const solved = uniqueLetters.every(l => gtGuessed.includes(l));
+            const failed = gtWrong >= GT_MAX_WRONG;
+            const roundOver = solved || failed;
+
+            const keyboard = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+            const livesLeft = GT_MAX_WRONG - gtWrong;
+            const hearts = '❤️'.repeat(Math.max(livesLeft, 0)) + '🖤'.repeat(Math.min(gtWrong, GT_MAX_WRONG));
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-lime-700 uppercase tracking-wider">Guess the Term • Word ${gtIdx + 1} of ${list.length}</span>
+                        <span class="text-lg tracking-wider">${hearts}</span>
+                    </div>
+
+                    <div class="bg-lime-50 border border-lime-200 rounded-xl p-4 text-center">
+                        <span class="text-[10px] text-lime-600 font-bold uppercase tracking-widest block mb-1">Hint</span>
+                        <span class="text-slate-800 font-semibold">${item.hint}</span>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-lime-900 to-slate-900 text-white text-center py-8 rounded-2xl">
+                        <span class="text-3xl sm:text-4xl font-mono font-black tracking-[0.3em]">${word.split('').map(ch => (gtGuessed.includes(ch) || failed) ? ch : '_').join(' ')}</span>
+                    </div>
+
+                    <div class="grid grid-cols-7 sm:grid-cols-9 gap-1.5">
+                        ${keyboard.map(letter => {
+                            const used = gtGuessed.includes(letter);
+                            const isHit = used && word.includes(letter);
+                            const isMiss = used && !word.includes(letter);
+                            return `<button onclick="guessLetter('${letter}')" ${used || roundOver ? 'disabled' : ''} class="py-2 rounded-lg text-xs font-black transition-all ${isHit ? 'bg-emerald-500 text-white' : isMiss ? 'bg-rose-200 text-rose-500' : 'bg-slate-100 hover:bg-lime-100 text-slate-700'} disabled:cursor-not-allowed">${letter}</button>`;
+                        }).join('')}
+                    </div>
+
+                    ${roundOver ? `
+                        <div class="p-4 rounded-xl text-xs ${solved ? 'bg-emerald-50 border border-emerald-200 text-emerald-900' : 'bg-rose-50 border border-rose-200 text-rose-900'}">
+                            <div class="font-bold">${solved ? '✅ Solved it!' : `❌ Out of guesses — the word was "${word}"`}</div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="pt-6 border-t border-slate-100 flex justify-end">
+                    ${roundOver ? `<button onclick="gtIdx++; gtGuessed=[]; gtWrong=0; renderActiveMiniGame();" class="bg-lime-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Next Word ➔</button>` : ''}
+                </div>
+            `;
+        }
+
+        function guessLetter(letter) {
+            if (gtGuessed.includes(letter)) return;
+            gtGuessed.push(letter);
+            const item = appState.currentData.guessterm[gtIdx];
+            const word = item.word.toUpperCase();
+
+            if (word.includes(letter)) {
+                playSound('correct');
+                const uniqueLetters = [...new Set(word.replace(/[^A-Z]/g, '').split(''))];
+                if (uniqueLetters.every(l => gtGuessed.includes(l))) {
+                    appState.score += 120;
+                    updateGlobalStatsUI();
+                }
+            } else {
+                playSound('incorrect');
+                gtWrong++;
+            }
+            renderActiveMiniGame();
+        }
+
+        // 12. TERM MUNCHER ENGINE (live grid chase — Pac-Man-style, with real content)
+        const MUNCHER_COLS = 7;
+        const MUNCHER_ROWS = 6;
+        const MUNCHER_GHOST_TICK_MS = 650;
+
+        function initMuncherRound(roundData) {
+            const coords = [];
+            for (let r = 0; r < MUNCHER_ROWS; r++) {
+                for (let c = 0; c < MUNCHER_COLS; c++) coords.push({ r, c });
+            }
+            coords.sort(() => Math.random() - 0.5);
+
+            let cursor = 0;
+            const playerStart = coords[cursor++];
+            const ghosts = [coords[cursor++], coords[cursor++]].map(p => ({ r: p.r, c: p.c }));
+
+            const correctTerms = roundData.correct.map((text, i) => {
+                const pos = coords[cursor++];
+                return { id: 'c' + i, text, r: pos.r, c: pos.c, eaten: false };
+            });
+            const incorrectTerms = roundData.incorrect.map((text, i) => {
+                const pos = coords[cursor++];
+                return { id: 'w' + i, text, r: pos.r, c: pos.c, eaten: false };
+            });
+
+            muncherState = {
+                category: roundData.category,
+                correctTerms,
+                incorrectTerms,
+                ghosts,
+                player: { r: playerStart.r, c: playerStart.c },
+                lives: 3,
+                roundOver: false,
+                roundWon: false
+            };
+        }
+
+        function startMuncherGhostTimer() {
+            clearInterval(muncherGhostInterval);
+            muncherGhostInterval = setInterval(moveMuncherGhosts, MUNCHER_GHOST_TICK_MS);
+        }
+
+        function attachMuncherKeyboardControls() {
+            if (muncherKeyHandlerAttached) return;
+            muncherKeyHandlerAttached = true;
+            document.addEventListener('keydown', muncherKeyHandler);
+        }
+
+        function muncherKeyHandler(e) {
+            // Only steer the player while the Arcade tab is visible and Term Muncher is the active game —
+            // this listener stays attached for the page's lifetime, so it must not hijack keystrokes
+            // typed anywhere else (e.g. the topic input on the builder tab).
+            const arcadeView = document.getElementById('view-arcade');
+            if (!arcadeView || arcadeView.classList.contains('hidden')) return;
+            if (appState.activeGame !== 'muncher' || !muncherState || muncherState.roundOver) return;
+
+            const key = e.key.toLowerCase();
+            if (key === 'arrowup' || key === 'w') { e.preventDefault(); muncherMove(-1, 0); }
+            else if (key === 'arrowdown' || key === 's') { e.preventDefault(); muncherMove(1, 0); }
+            else if (key === 'arrowleft' || key === 'a') { e.preventDefault(); muncherMove(0, -1); }
+            else if (key === 'arrowright' || key === 'd') { e.preventDefault(); muncherMove(0, 1); }
+        }
+
+        function renderMuncherGame(container) {
+            const list = appState.currentData.muncher || [];
+            if (list.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-slate-500 text-sm font-semibold">No Term Muncher rounds in this game suite.</div>`;
+                return;
+            }
+
+            if (muncherRoundIdx >= list.length) {
+                clearInterval(muncherGhostInterval);
+                playSound('win');
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="w-16 h-16 rounded-full bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center font-black text-3xl mx-auto">🏆</div>
+                        <h3 class="text-2xl font-black text-slate-900">Term Muncher Complete!</h3>
+                        <button onclick="muncherRoundIdx=0; muncherState=null; renderActiveMiniGame();" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all">Play Term Muncher Again</button>
+                    </div>
+                `;
+                return;
+            }
+
+            if (!muncherState) {
+                initMuncherRound(list[muncherRoundIdx]);
+                startMuncherGhostTimer();
+                attachMuncherKeyboardControls();
+            }
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-fuchsia-600 uppercase tracking-wider">Term Muncher • Round ${muncherRoundIdx + 1} of ${list.length}</span>
+                        <span id="muncher-lives" class="text-lg">${'❤️'.repeat(muncherState.lives)}</span>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-fuchsia-900 to-slate-900 text-white p-4 rounded-2xl text-center">
+                        <span class="text-[10px] text-fuchsia-300 font-bold uppercase tracking-widest block mb-1">Eat only:</span>
+                        <span class="text-lg font-black">${muncherState.category}</span>
+                    </div>
+
+                    <div id="muncher-grid-inner" class="flex justify-center overflow-x-auto"></div>
+
+                    <div id="muncher-status" class="hidden"></div>
+
+                    <div class="flex flex-col items-center gap-1.5 pt-2">
+                        <button onclick="muncherMove(-1,0)" class="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 hover:bg-fuchsia-100 border-2 border-slate-200 hover:border-fuchsia-300 rounded-xl font-black text-xl transition-colors">↑</button>
+                        <div class="flex gap-1.5">
+                            <button onclick="muncherMove(0,-1)" class="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 hover:bg-fuchsia-100 border-2 border-slate-200 hover:border-fuchsia-300 rounded-xl font-black text-xl transition-colors">←</button>
+                            <button onclick="muncherMove(1,0)" class="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 hover:bg-fuchsia-100 border-2 border-slate-200 hover:border-fuchsia-300 rounded-xl font-black text-xl transition-colors">↓</button>
+                            <button onclick="muncherMove(0,1)" class="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 hover:bg-fuchsia-100 border-2 border-slate-200 hover:border-fuchsia-300 rounded-xl font-black text-xl transition-colors">→</button>
+                        </div>
+                        <p class="text-[10px] text-slate-400 font-semibold pt-1">Arrow keys / WASD, or tap the pad. Dodge the 👻 ghosts!</p>
+                    </div>
+                </div>
+            `;
+            renderMuncherGrid();
+        }
+
+        function renderMuncherGrid() {
+            const el = document.getElementById('muncher-grid-inner');
+            if (!el || !muncherState) return;
+            const { player, ghosts, correctTerms, incorrectTerms } = muncherState;
+
+            const cells = [];
+            for (let r = 0; r < MUNCHER_ROWS; r++) {
+                for (let c = 0; c < MUNCHER_COLS; c++) {
+                    let content = '';
+                    let cellClass = 'bg-slate-800/50 border border-slate-700/40';
+
+                    const ghostHere = ghosts.some(g => g.r === r && g.c === c);
+                    const correctHere = correctTerms.find(t => !t.eaten && t.r === r && t.c === c);
+                    const incorrectHere = incorrectTerms.find(t => !t.eaten && t.r === r && t.c === c);
+
+                    if (player.r === r && player.c === c) {
+                        content = '<span class="muncher-player-icon text-2xl sm:text-3xl">🟡</span>';
+                        cellClass = 'bg-fuchsia-500/25 border border-fuchsia-400/60';
+                    } else if (ghostHere) {
+                        content = '<span class="muncher-ghost-icon text-2xl sm:text-3xl">👻</span>';
+                        cellClass = 'bg-slate-700/70 border border-slate-600/60';
+                    } else if (correctHere) {
+                        content = `<span class="text-[9px] sm:text-[10px] font-black leading-none px-1 break-words text-slate-900" title="${correctHere.text}">${correctHere.text}</span>`;
+                        cellClass = 'bg-white border-2 border-fuchsia-300 shadow-md';
+                    } else if (incorrectHere) {
+                        content = `<span class="text-[9px] sm:text-[10px] font-black leading-none px-1 break-words text-slate-900" title="${incorrectHere.text}">${incorrectHere.text}</span>`;
+                        cellClass = 'bg-white border-2 border-fuchsia-300 shadow-md';
+                    }
+
+                    cells.push(`<div class="w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center rounded-lg ${cellClass} text-center overflow-hidden transition-colors">${content}</div>`);
+                }
+            }
+
+            el.innerHTML = `<div class="grid gap-1 bg-gradient-to-br from-slate-900 to-fuchsia-950 p-3 rounded-2xl border-2 border-fuchsia-500/30 shadow-xl" style="grid-template-columns: repeat(${MUNCHER_COLS}, minmax(0,1fr));">${cells.join('')}</div>`;
+
+            const livesEl = document.getElementById('muncher-lives');
+            if (livesEl) livesEl.innerText = '❤️'.repeat(Math.max(muncherState.lives, 0));
+        }
+
+        function muncherMove(dr, dc) {
+            if (!muncherState || muncherState.roundOver) return;
+
+            const nr = muncherState.player.r + dr;
+            const nc = muncherState.player.c + dc;
+            if (nr < 0 || nr >= MUNCHER_ROWS || nc < 0 || nc >= MUNCHER_COLS) return; // wall — ignore
+
+            muncherState.player.r = nr;
+            muncherState.player.c = nc;
+
+            if (muncherState.ghosts.some(g => g.r === nr && g.c === nc)) {
+                handleMuncherHit();
+                return;
+            }
+
+            const correctTerm = muncherState.correctTerms.find(t => !t.eaten && t.r === nr && t.c === nc);
+            if (correctTerm) {
+                correctTerm.eaten = true;
+                playSound('correct');
+                appState.score += 60;
+                updateGlobalStatsUI();
+                if (muncherState.correctTerms.every(t => t.eaten)) {
+                    muncherRoundWon();
+                    return;
+                }
+            } else {
+                const incorrectTerm = muncherState.incorrectTerms.find(t => !t.eaten && t.r === nr && t.c === nc);
+                if (incorrectTerm) {
+                    incorrectTerm.eaten = true;
+                    playSound('incorrect');
+                    muncherState.lives--;
+                    if (muncherState.lives <= 0) { muncherGameOver(); return; }
+                }
+            }
+
+            renderMuncherGrid();
+        }
+
+        function moveMuncherGhosts() {
+            if (!muncherState || muncherState.roundOver) return;
+            const { player } = muncherState;
+            const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+            muncherState.ghosts.forEach(g => {
+                let chosen = null;
+                // Mostly chase (greedy step toward the player), occasionally wander — keeps it
+                // beatable rather than punishing for a classroom setting.
+                if (Math.random() < 0.6) {
+                    let bestDist = Infinity;
+                    dirs.forEach(([dr, dc]) => {
+                        const nr = g.r + dr, nc = g.c + dc;
+                        if (nr < 0 || nr >= MUNCHER_ROWS || nc < 0 || nc >= MUNCHER_COLS) return;
+                        const dist = Math.abs(nr - player.r) + Math.abs(nc - player.c);
+                        if (dist < bestDist) { bestDist = dist; chosen = { r: nr, c: nc }; }
+                    });
+                }
+                if (!chosen) {
+                    const valid = dirs
+                        .map(([dr, dc]) => ({ r: g.r + dr, c: g.c + dc }))
+                        .filter(p => p.r >= 0 && p.r < MUNCHER_ROWS && p.c >= 0 && p.c < MUNCHER_COLS);
+                    if (valid.length) chosen = valid[Math.floor(Math.random() * valid.length)];
+                }
+                if (chosen) { g.r = chosen.r; g.c = chosen.c; }
+            });
+
+            if (muncherState.ghosts.some(g => g.r === player.r && g.c === player.c)) {
+                handleMuncherHit();
+            } else {
+                renderMuncherGrid();
+            }
+        }
+
+        function handleMuncherHit() {
+            playSound('incorrect');
+            muncherState.lives--;
+            if (muncherState.lives <= 0) { muncherGameOver(); return; }
+            respawnMuncherPlayer();
+            renderMuncherGrid();
+        }
+
+        function respawnMuncherPlayer() {
+            const { ghosts, correctTerms, incorrectTerms } = muncherState;
+            let pos, attempts = 0;
+            do {
+                pos = { r: Math.floor(Math.random() * MUNCHER_ROWS), c: Math.floor(Math.random() * MUNCHER_COLS) };
+                attempts++;
+            } while (attempts < 50 && (
+                ghosts.some(g => g.r === pos.r && g.c === pos.c) ||
+                correctTerms.some(t => !t.eaten && t.r === pos.r && t.c === pos.c) ||
+                incorrectTerms.some(t => !t.eaten && t.r === pos.r && t.c === pos.c)
+            ));
+            muncherState.player = pos;
+        }
+
+        function muncherRoundWon() {
+            muncherState.roundOver = true;
+            muncherState.roundWon = true;
+            clearInterval(muncherGhostInterval);
+            playSound('levelup');
+            const statusEl = document.getElementById('muncher-status');
+            statusEl.className = "p-4 rounded-xl text-sm font-bold bg-emerald-50 border border-emerald-200 text-emerald-900 text-center space-y-2";
+            statusEl.innerHTML = `<div>✅ Round Clear! All correct terms munched.</div><button onclick="muncherRoundIdx++; muncherState=null; renderActiveMiniGame();" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold px-4 py-2 rounded-xl text-xs">Next Round ➔</button>`;
+            renderMuncherGrid();
+        }
+
+        function muncherGameOver() {
+            muncherState.roundOver = true;
+            muncherState.lives = 0;
+            clearInterval(muncherGhostInterval);
+            const statusEl = document.getElementById('muncher-status');
+            statusEl.className = "p-4 rounded-xl text-sm font-bold bg-rose-50 border border-rose-200 text-rose-900 text-center space-y-2";
+            statusEl.innerHTML = `<div>❌ Out of lives! The ghosts got you.</div><button onclick="muncherState=null; renderActiveMiniGame();" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold px-4 py-2 rounded-xl text-xs">Retry Round</button>`;
+            renderMuncherGrid();
+        }
+
+        // 13. TERM SHOOTER ENGINE (aim-and-shoot arcade shooter)
+        const SHOOTER_MAX_LIVES = 3;
+        const SHOOTER_PROJECTILE_SPEED = 720; // px per second
+
+        function initShooterRound(roundData) {
+            const options = [roundData.correct, ...roundData.distractors].map((text, i) => ({
+                id: 'r' + Math.random().toString(36).slice(2) + '-' + i,
+                text,
+                isCorrect: text === roundData.correct,
+                removed: false
+            }));
+            options.sort(() => Math.random() - 0.5);
+
+            // Give each term its own randomized diagonal path (start/mid/end X) and speed so
+            // they drift and cross over one another instead of all falling in neat straight lanes.
+            options.forEach((opt, i) => {
+                opt.startX = 10 + Math.random() * 80;
+                opt.midX = 10 + Math.random() * 80;
+                opt.endX = 10 + Math.random() * 80;
+                opt.fallDuration = 6.5 + Math.random() * 4.5;  // 6.5s–11s
+                opt.fallDelay = i * 0.4 + Math.random() * 0.5; // staggered starts
+            });
+
+            shooterState = {
+                prompt: roundData.prompt,
+                options,
+                lives: SHOOTER_MAX_LIVES,
+                roundOver: false,
+                roundWon: false,
+                cannonX: 50,
+                shotInFlight: false
+            };
+        }
+
+        function renderShooterGame(container) {
+            const list = appState.currentData.shooter || [];
+            if (list.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-slate-500 text-sm font-semibold">No Term Shooter rounds in this game suite.</div>`;
+                return;
+            }
+
+            if (shooterRoundIdx >= list.length) {
+                playSound('win');
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="w-16 h-16 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-black text-3xl mx-auto">🏆</div>
+                        <h3 class="text-2xl font-black text-slate-900">Term Shooter Complete!</h3>
+                        <button onclick="shooterRoundIdx=0; shooterState=null; renderActiveMiniGame();" class="bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all">Play Term Shooter Again</button>
+                    </div>
+                `;
+                return;
+            }
+
+            if (!shooterState) {
+                initShooterRound(list[shooterRoundIdx]);
+                attachShooterKeyboardControls();
+            }
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-red-600 uppercase tracking-wider">Term Shooter • Round ${shooterRoundIdx + 1} of ${list.length}</span>
+                        <span id="shooter-lives" class="text-lg">${'❤️'.repeat(shooterState.lives)}</span>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-red-900 to-slate-900 text-white p-4 rounded-2xl text-center">
+                        <span class="text-[10px] text-red-300 font-bold uppercase tracking-widest block mb-1">Shoot:</span>
+                        <span class="text-lg font-black">${shooterState.prompt}</span>
+                    </div>
+
+                    <div id="shooter-arena" class="shooter-arena relative bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl overflow-hidden h-80 border border-slate-700"></div>
+
+                    <div id="shooter-status" class="hidden"></div>
+
+                    <p class="text-[10px] text-slate-400 font-semibold text-center">Move your mouse (or ← →) to aim the cannon, then click or tap to fire!</p>
+                </div>
+            `;
+            spawnShooterTerms();
+            setupShooterArenaControls();
+        }
+
+        function spawnShooterTerms() {
+            const arena = document.getElementById('shooter-arena');
+            if (!arena || !shooterState) return;
+            arena.innerHTML = `<div class="shooter-cannon" id="shooter-cannon" style="left:${shooterState.cannonX}%" aria-hidden="true">🔫</div>`;
+
+            shooterState.options.forEach(opt => {
+                if (opt.removed) return;
+                const el = document.createElement('div');
+                el.id = 'shooter-' + opt.id;
+                el.className = 'shooter-term absolute px-3 py-1.5 rounded-lg text-xs sm:text-sm font-black bg-white text-slate-900 shadow-lg border-2 border-red-200';
+                el.style.setProperty('--start-x', opt.startX + '%');
+                el.style.setProperty('--mid-x', opt.midX + '%');
+                el.style.setProperty('--end-x', opt.endX + '%');
+                el.style.left = opt.startX + '%';
+                el.style.top = '-40px';
+                el.style.animation = `shooterFall ${opt.fallDuration}s linear ${opt.fallDelay}s forwards`;
+                el.innerText = opt.text;
+                el.addEventListener('animationend', () => handleShooterLanded(opt.id));
+                arena.appendChild(el);
+            });
+        }
+
+        // ---------- Aiming + firing ----------
+        function setupShooterArenaControls() {
+            const arena = document.getElementById('shooter-arena');
+            if (!arena) return;
+
+            const aimFromClientX = (clientX) => {
+                const rect = arena.getBoundingClientRect();
+                moveShooterCannon(((clientX - rect.left) / rect.width) * 100);
+            };
+
+            arena.addEventListener('mousemove', (e) => aimFromClientX(e.clientX));
+            arena.addEventListener('touchmove', (e) => {
+                if (e.touches && e.touches[0]) aimFromClientX(e.touches[0].clientX);
+            }, { passive: true });
+            arena.addEventListener('touchstart', (e) => {
+                if (e.touches && e.touches[0]) aimFromClientX(e.touches[0].clientX);
+                fireShooterShot();
+            });
+            arena.addEventListener('click', fireShooterShot);
+        }
+
+        function moveShooterCannon(pct) {
+            if (!shooterState) return;
+            shooterState.cannonX = Math.max(5, Math.min(95, pct));
+            const cannon = document.getElementById('shooter-cannon');
+            if (cannon) cannon.style.left = shooterState.cannonX + '%';
+        }
+
+        function attachShooterKeyboardControls() {
+            if (shooterKeyHandlerAttached) return;
+            shooterKeyHandlerAttached = true;
+            document.addEventListener('keydown', (e) => {
+                const arcadeView = document.getElementById('view-arcade');
+                if (!arcadeView || arcadeView.classList.contains('hidden')) return;
+                if (appState.activeGame !== 'shooter' || !shooterState || shooterState.roundOver) return;
+
+                const key = e.key.toLowerCase();
+                if (key === 'arrowleft' || key === 'a') { e.preventDefault(); moveShooterCannon(shooterState.cannonX - 4); }
+                else if (key === 'arrowright' || key === 'd') { e.preventDefault(); moveShooterCannon(shooterState.cannonX + 4); }
+                else if (key === ' ' || key === 'arrowup' || key === 'w') { e.preventDefault(); fireShooterShot(); }
+            });
+        }
+
+        // Fires one projectile from the cannon's current aim, upward, checking each frame for a
+        // live collision against any still-falling term's actual on-screen position.
+        function fireShooterShot() {
+            if (!shooterState || shooterState.roundOver || shooterState.shotInFlight) return;
+            const arena = document.getElementById('shooter-arena');
+            if (!arena) return;
+
+            shooterState.shotInFlight = true;
+            playSound('click');
+
+            const startRect = arena.getBoundingClientRect();
+            let px = (shooterState.cannonX / 100) * startRect.width;
+            let py = startRect.height - 24;
+
+            const projectile = document.createElement('div');
+            projectile.className = 'shooter-projectile';
+            projectile.style.left = (px - 3) + 'px';
+            projectile.style.top = py + 'px';
+            arena.appendChild(projectile);
+
+            let lastTime = performance.now();
+
+            function step(now) {
+                if (!shooterState || !document.body.contains(projectile)) return;
+                const dt = (now - lastTime) / 1000;
+                lastTime = now;
+                py -= SHOOTER_PROJECTILE_SPEED * dt;
+                projectile.style.top = py + 'px';
+
+                const arenaRect = arena.getBoundingClientRect();
+                const shotX = arenaRect.left + px;
+                const shotY = arenaRect.top + py;
+
+                let hitOpt = null;
+                for (const opt of shooterState.options) {
+                    if (opt.removed) continue;
+                    const el = document.getElementById('shooter-' + opt.id);
+                    if (!el) continue;
+                    const r = el.getBoundingClientRect();
+                    if (shotX >= r.left - 4 && shotX <= r.right + 4 && shotY >= r.top - 4 && shotY <= r.bottom + 4) {
+                        hitOpt = opt;
+                        break;
+                    }
+                }
+
+                if (hitOpt) {
+                    hitOpt.removed = true;
+                    const el = document.getElementById('shooter-' + hitOpt.id);
+                    const elRect = el ? el.getBoundingClientRect() : null;
+                    projectile.remove();
+                    shooterState.shotInFlight = false;
+
+                    const burst = document.createElement('div');
+                    burst.className = 'shooter-burst';
+                    if (elRect) {
+                        burst.style.left = (elRect.left - arenaRect.left + elRect.width / 2 - 18) + 'px';
+                        burst.style.top = (elRect.top - arenaRect.top + elRect.height / 2 - 18) + 'px';
+                    } else {
+                        burst.style.left = (px - 18) + 'px';
+                        burst.style.top = (py - 18) + 'px';
+                    }
+                    arena.appendChild(burst);
+                    setTimeout(() => burst.remove(), 400);
+                    if (el) el.remove();
+
+                    resolveShooterHit(hitOpt);
+                    return;
+                }
+
+                if (py < -20) {
+                    projectile.remove();
+                    shooterState.shotInFlight = false;
+                    return; // clean miss — no penalty, just try again
+                }
+
+                requestAnimationFrame(step);
+            }
+
+            requestAnimationFrame(step);
+        }
+
+        function updateShooterLivesDisplay() {
+            const el = document.getElementById('shooter-lives');
+            if (el) el.innerText = '❤️'.repeat(Math.max(shooterState.lives, 0));
+        }
+
+        function clearRemainingShooterTerms() {
+            const arena = document.getElementById('shooter-arena');
+            if (arena) arena.innerHTML = '';
+        }
+
+        function resolveShooterHit(opt) {
+            if (opt.isCorrect) {
+                playSound('correct');
+                appState.score += 100;
+                updateGlobalStatsUI();
+                shooterRoundWon();
+            } else {
+                playSound('incorrect');
+                shooterState.lives--;
+                updateShooterLivesDisplay();
+                if (shooterState.lives <= 0) shooterRoundLost();
+            }
+        }
+
+        function handleShooterLanded(id) {
+            if (!shooterState || shooterState.roundOver) return;
+            const opt = shooterState.options.find(o => o.id === id);
+            if (!opt || opt.removed) return;
+            opt.removed = true;
+
+            const el = document.getElementById('shooter-' + id);
+            if (el) el.remove();
+
+            // A wrong term reaching the ground is harmless and simply disappears.
+            // The correct term reaching the ground unclicked means it got away — the round is lost.
+            if (opt.isCorrect) {
+                playSound('incorrect');
+                shooterRoundLost();
+            }
+        }
+
+        function shooterRoundWon() {
+            shooterState.roundOver = true;
+            shooterState.roundWon = true;
+            clearRemainingShooterTerms();
+            playSound('levelup');
+            const statusEl = document.getElementById('shooter-status');
+            statusEl.className = "p-4 rounded-xl text-sm font-bold bg-emerald-50 border border-emerald-200 text-emerald-900 text-center";
+            statusEl.innerHTML = `<div>✅ Direct hit! Next term incoming...</div>`;
+            // Auto-advance rather than waiting on a manual button — keeps the pace continuous.
+            setTimeout(() => { shooterRoundIdx++; shooterState = null; renderActiveMiniGame(); }, 900);
+        }
+
+        function shooterRoundLost() {
+            shooterState.roundOver = true;
+            shooterState.lives = 0;
+            clearRemainingShooterTerms();
+            const correctOpt = shooterState.options.find(o => o.isCorrect);
+            const statusEl = document.getElementById('shooter-status');
+            statusEl.className = "p-4 rounded-xl text-sm font-bold bg-rose-50 border border-rose-200 text-rose-900 text-center space-y-2";
+            statusEl.innerHTML = `<div>❌ Missed it! The correct answer was "${correctOpt ? correctOpt.text : ''}".</div><button onclick="shooterState=null; renderActiveMiniGame();" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl text-xs">Retry Round</button>`;
+            updateShooterLivesDisplay();
+        }
+
+        // 14. CROSSWORD ENGINE (best-effort auto-interlocking grid — not a guaranteed-dense
+        // professional layout, but places every word, crossing where it can)
+        const CROSSWORD_SIZE = 13;
+
+        function crosswordCanPlace(grid, word, r, c, dir) {
+            for (let i = 0; i < word.length; i++) {
+                const rr = dir === 'down' ? r + i : r;
+                const cc = dir === 'across' ? c + i : c;
+                if (rr < 0 || rr >= CROSSWORD_SIZE || cc < 0 || cc >= CROSSWORD_SIZE) return false;
+                const existing = grid[rr][cc];
+                if (existing && existing.char !== word[i]) return false;
+            }
+            return true;
+        }
+
+        function crosswordPlace(grid, word, r, c, dir) {
+            for (let i = 0; i < word.length; i++) {
+                const rr = dir === 'down' ? r + i : r;
+                const cc = dir === 'across' ? c + i : c;
+                grid[rr][cc] = { char: word[i] };
+            }
+        }
+
+        function crosswordFindOpenSpot(grid, word) {
+            for (let r = 0; r < CROSSWORD_SIZE; r++) {
+                for (let c = 0; c <= CROSSWORD_SIZE - word.length; c++) {
+                    let ok = true;
+                    for (let i = 0; i < word.length; i++) { if (grid[r][c + i]) { ok = false; break; } }
+                    if (ok) return { r, c, dir: 'across' };
+                }
+            }
+            return null; // extremely unlikely to be reached given the grid size vs. word count
+        }
+
+        function generateCrossword(items) {
+            const grid = Array(CROSSWORD_SIZE).fill(null).map(() => Array(CROSSWORD_SIZE).fill(null));
+            const placed = [];
+
+            const sorted = items
+                .map(it => ({ clue: it.clue, answer: (it.answer || '').toUpperCase().replace(/[^A-Z]/g, '') }))
+                .filter(it => it.answer)
+                .sort((a, b) => b.answer.length - a.answer.length);
+
+            sorted.forEach((item, idx) => {
+                const word = item.answer;
+
+                if (idx === 0) {
+                    const r = Math.floor(CROSSWORD_SIZE / 2);
+                    const c = Math.max(0, Math.floor((CROSSWORD_SIZE - word.length) / 2));
+                    crosswordPlace(grid, word, r, c, 'across');
+                    placed.push({ ...item, r, c, dir: 'across' });
+                    return;
+                }
+
+                let bestPlacement = null;
+                for (let i = 0; i < word.length && !bestPlacement; i++) {
+                    const letter = word[i];
+                    for (let r = 0; r < CROSSWORD_SIZE && !bestPlacement; r++) {
+                        for (let c = 0; c < CROSSWORD_SIZE && !bestPlacement; c++) {
+                            if (grid[r][c] && grid[r][c].char === letter) {
+                                const downStart = { r: r - i, c, dir: 'down' };
+                                const acrossStart = { r, c: c - i, dir: 'across' };
+                                if (crosswordCanPlace(grid, word, downStart.r, downStart.c, 'down')) bestPlacement = downStart;
+                                else if (crosswordCanPlace(grid, word, acrossStart.r, acrossStart.c, 'across')) bestPlacement = acrossStart;
+                            }
+                        }
+                    }
+                }
+
+                if (!bestPlacement) bestPlacement = crosswordFindOpenSpot(grid, word);
+
+                if (bestPlacement) {
+                    crosswordPlace(grid, word, bestPlacement.r, bestPlacement.c, bestPlacement.dir);
+                    placed.push({ ...item, r: bestPlacement.r, c: bestPlacement.c, dir: bestPlacement.dir });
+                }
+            });
+
+            // Number word-starts in reading order (top-to-bottom, left-to-right).
+            const uniqueStarts = [];
+            const seen = new Set();
+            placed.forEach(w => {
+                const key = w.r + ',' + w.c;
+                if (!seen.has(key)) { seen.add(key); uniqueStarts.push({ r: w.r, c: w.c }); }
+            });
+            uniqueStarts.sort((a, b) => a.r - b.r || a.c - b.c);
+            const numberMap = {};
+            uniqueStarts.forEach((pos, i) => { numberMap[pos.r + ',' + pos.c] = i + 1; });
+            placed.forEach(w => { w.number = numberMap[w.r + ',' + w.c]; });
+
+            return { grid, placed };
+        }
+
+        function renderCrosswordGame(container) {
+            const cwData = appState.currentData.crossword || [];
+            if (cwData.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-slate-500 text-sm font-semibold">No Crossword data in this game suite.</div>`;
+                return;
+            }
+
+            if (!crosswordState) {
+                const { grid, placed } = generateCrossword(cwData);
+                const userGrid = Array(CROSSWORD_SIZE).fill(null).map(() => Array(CROSSWORD_SIZE).fill(''));
+                crosswordState = { grid, placed, userGrid, checked: false };
+            }
+
+            const { grid, placed, userGrid, checked } = crosswordState;
+            const acrossClues = placed.filter(w => w.dir === 'across').sort((a, b) => a.number - b.number);
+            const downClues = placed.filter(w => w.dir === 'down').sort((a, b) => a.number - b.number);
+
+            let correctCount = 0, totalCount = 0;
+            if (checked) {
+                for (let r = 0; r < CROSSWORD_SIZE; r++) {
+                    for (let c = 0; c < CROSSWORD_SIZE; c++) {
+                        if (grid[r][c]) {
+                            totalCount++;
+                            if (userGrid[r][c] === grid[r][c].char) correctCount++;
+                        }
+                    }
+                }
+            }
+
+            const numberMap = {};
+            placed.forEach(w => { numberMap[w.r + ',' + w.c] = w.number; });
+
+            let gridHtml = '';
+            for (let r = 0; r < CROSSWORD_SIZE; r++) {
+                for (let c = 0; c < CROSSWORD_SIZE; c++) {
+                    const cell = grid[r][c];
+                    if (!cell) {
+                        gridHtml += `<div class="w-6 h-6 sm:w-7 sm:h-7"></div>`;
+                        continue;
+                    }
+                    const num = numberMap[r + ',' + c];
+                    const val = userGrid[r][c];
+                    let cellClass = 'bg-white border-slate-300';
+                    if (checked) {
+                        cellClass = val && val === cell.char ? 'bg-emerald-100 border-emerald-400' : (val ? 'bg-rose-100 border-rose-400' : 'bg-white border-slate-300');
+                    }
+                    gridHtml += `
+                        <div class="relative w-6 h-6 sm:w-7 sm:h-7">
+                            ${num ? `<span class="absolute top-0 left-0.5 text-[6px] sm:text-[7px] font-bold text-slate-400 leading-none pointer-events-none">${num}</span>` : ''}
+                            <input maxlength="1" data-r="${r}" data-c="${c}" oninput="handleCrosswordInput(this,${r},${c})" value="${val}" class="w-full h-full text-center text-[10px] sm:text-xs font-black uppercase border ${cellClass} focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-none">
+                        </div>`;
+                }
+            }
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-amber-600 uppercase tracking-wider">Crossword Challenge</span>
+                        <button onclick="checkCrossword()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-lg text-xs transition-all">Check Puzzle</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 overflow-x-auto flex justify-center bg-slate-50 rounded-xl p-2">
+                            <div class="grid gap-0" style="grid-template-columns: repeat(${CROSSWORD_SIZE}, minmax(0,1fr)); width: max-content;">
+                                ${gridHtml}
+                            </div>
+                        </div>
+                        <div class="space-y-4 text-xs max-h-72 overflow-y-auto custom-scrollbar pr-1">
+                            <div>
+                                <h4 class="font-black text-slate-800 mb-1 uppercase tracking-wide text-[11px]">Across</h4>
+                                <ol class="space-y-1 text-slate-600">
+                                    ${acrossClues.map(w => `<li><strong class="text-slate-900">${w.number}.</strong> ${w.clue}</li>`).join('') || '<li class="text-slate-400">None</li>'}
+                                </ol>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-slate-800 mb-1 uppercase tracking-wide text-[11px]">Down</h4>
+                                <ol class="space-y-1 text-slate-600">
+                                    ${downClues.map(w => `<li><strong class="text-slate-900">${w.number}.</strong> ${w.clue}</li>`).join('') || '<li class="text-slate-400">None</li>'}
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${checked ? `
+                        <div class="p-4 rounded-xl text-sm font-bold text-center ${correctCount === totalCount ? 'bg-emerald-50 border border-emerald-200 text-emerald-900' : 'bg-amber-50 border border-amber-200 text-amber-900'}">
+                            ${correctCount === totalCount ? '🎉 Perfect! Every letter is correct.' : `${correctCount}/${totalCount} letters correct so far — keep going!`}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function handleCrosswordInput(el, r, c) {
+            const val = el.value.toUpperCase().slice(0, 1);
+            el.value = val;
+            if (crosswordState) crosswordState.userGrid[r][c] = val;
+        }
+
+        function checkCrossword() {
+            if (!crosswordState) return;
+            crosswordState.checked = true;
+
+            let correctCount = 0, totalCount = 0;
+            for (let r = 0; r < CROSSWORD_SIZE; r++) {
+                for (let c = 0; c < CROSSWORD_SIZE; c++) {
+                    if (crosswordState.grid[r][c]) {
+                        totalCount++;
+                        if (crosswordState.userGrid[r][c] === crosswordState.grid[r][c].char) correctCount++;
+                    }
+                }
+            }
+
+            if (totalCount > 0 && correctCount === totalCount) {
+                playSound('win');
+                appState.score += 300;
+                updateGlobalStatsUI();
+            } else {
+                playSound(correctCount > totalCount * 0.5 ? 'correct' : 'incorrect');
+            }
+
+            renderActiveMiniGame();
+        }
+
+        // Stats Updates
+        let lastKnownScore = 0;
+        function updateGlobalStatsUI() {
+            const scoreEl = document.getElementById('global-score-val');
+            scoreEl.innerText = appState.score;
+            if (appState.score > lastKnownScore) {
+                scoreEl.classList.remove('stat-pop');
+                void scoreEl.offsetWidth; // force reflow so the pop animation replays
+                scoreEl.classList.add('stat-pop');
+            }
+            lastKnownScore = appState.score;
+
+            document.getElementById('global-streak-val').innerText = appState.streak;
+            document.getElementById('stat-total-questions').innerText = appState.stats.totalQuestions;
+            
+            const accuracy = appState.stats.totalQuestions > 0 ? Math.round((appState.stats.correctAnswers / appState.stats.totalQuestions) * 100) : 0;
+            document.getElementById('stat-accuracy-rate').innerText = accuracy + '%';
+            document.getElementById('stat-current-streak').innerText = appState.streak;
+            
+            if (appState.score > 800) document.getElementById('stat-mastery-level').innerText = "Grandmaster";
+            else if (appState.score > 400) document.getElementById('stat-mastery-level').innerText = "Scholar";
+            else if (appState.score > 200) document.getElementById('stat-mastery-level').innerText = "Apprentice";
+        }
+
+        // Charts
+        let radarChartInstance = null;
+        let barChartInstance = null;
+
+        function renderAnalyticsCharts() {
+            if (typeof Chart === 'undefined') {
+                showToast("Analytics engine is still loading. Please try again in a moment.");
+                return;
+            }
+
+            const radarCtx = document.getElementById('bloomRadarChart').getContext('2d');
+            if (radarChartInstance) radarChartInstance.destroy();
+            radarChartInstance = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate'],
+                    datasets: [{
+                        label: 'Cognitive Depth Score',
+                        data: [
+                            appState.stats.blooms.Remember,
+                            appState.stats.blooms.Understand,
+                            appState.stats.blooms.Apply,
+                            appState.stats.blooms.Analyze,
+                            appState.stats.blooms.Evaluate
+                        ],
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        borderColor: '#6366f1',
+                        borderWidth: 2
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100 } } }
+            });
+
+            const barCtx = document.getElementById('gameAccuracyChart').getContext('2d');
+            if (barChartInstance) barChartInstance.destroy();
+            barChartInstance = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Quiz', 'Memory', 'Scramble', 'Sorting', 'Search', 'Sequence', 'True/False', 'Cloze', 'Odd One Out', 'Sentence', 'Guess Term', 'Muncher', 'Shooter', 'Crossword'],
+                    datasets: [{
+                        label: 'Accuracy %',
+                        data: [85, 90, 75, 80, 95, 70, 88, 82, 78, 79, 84, 81, 77, 80],
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#a855f7', '#f43f5e', '#06b6d4', '#14b8a6', '#f97316', '#0284c7', '#8b5cf6', '#84cc16', '#d946ef', '#ef4444', '#d97706'],
+                        borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } }
+            });
+        }
+
+        // Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            // Capture the page's own pristine markup as early as possible — before anything else
+            // mutates the DOM — so "Download as HTML" can use it as a clean template later.
+            try { window.__PRISTINE_HTML__ = '<!DOCTYPE html>\n' + document.documentElement.outerHTML; } catch (e) { window.__PRISTINE_HTML__ = null; }
+
+            loadDisplayPrefs();
+            initPromptBuilder();
+            // If this page was opened via a "Share with Students" link, load that suite directly.
+            // Otherwise, don't auto-load presets — start fresh on the builder tab.
+            if (!checkForSharedSuite()) {
+                switchTab('promptbuilder');
+            }
+        });
+    </script>
+</body>
+</html>
