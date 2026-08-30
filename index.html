@@ -411,9 +411,6 @@
                     <button onclick="generateShareLink()" class="bg-whsblue-700 hover:bg-whsblue-800 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1">
                         <span>🔗 Share with Students</span>
                     </button>
-                    <button onclick="downloadSuiteAsHtml()" class="bg-whsgold-600 hover:bg-whsgold-700 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1">
-                        <span>📥 Download HTML</span>
-                    </button>
                     <button onclick="restartCurrentGame()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1">
                         <span>🔄 Restart Game</span>
                     </button>
@@ -441,15 +438,6 @@
             </div>
 
             <!-- Share Link Box -->
-            <div id="share-link-box" class="hidden bg-whsblue-50 border border-whsblue-200 rounded-2xl p-4 space-y-2">
-                <p class="text-xs font-bold text-whsblue-900">Send this link to students — it opens straight into this exact game suite, no sign-in needed:</p>
-                <div class="flex flex-col sm:flex-row gap-2">
-                    <input type="text" id="share-link-input" readonly onclick="this.select()" class="flex-grow bg-white border border-whsblue-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-700 shadow-inner">
-                    <button onclick="copyShareLink()" class="shrink-0 bg-whsblue-700 hover:bg-whsblue-800 text-white font-bold px-4 py-2 rounded-lg text-xs whitespace-nowrap transition-colors">📋 Copy Link</button>
-                </div>
-                <p class="text-[10px] text-whsblue-700">Works best shared via Google Classroom, email, or your LMS. Very large game suites make for a long link — if it looks unwieldy, trim the number of game modes enabled below.</p>
-            </div>
-
             <!-- Viewport Container for Mini Game -->
             <div id="active-game-viewport" class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm min-h-[480px] flex flex-col justify-between">
                 <!-- Mini game UI rendered dynamically -->
@@ -545,6 +533,52 @@
             </div>
             <p class="text-slate-600 text-sm font-medium">Your teacher built this set of games just for you. Ready to see what you know?</p>
             <button onclick="dismissWelcomeOverlay()" class="w-full bg-whsgold-600 hover:bg-whsgold-700 active:scale-95 text-white font-black py-4 rounded-xl text-lg shadow-lg transition-all transform hover:-translate-y-0.5">▶ Let's Play!</button>
+        </div>
+    </div>
+
+    <!-- Share-with-Students Instructions Modal (real popup, not inline) -->
+    <div id="share-link-modal" class="hidden fixed inset-0 z-[65] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"></div>
+        <div class="welcome-in relative bg-white rounded-2xl shadow-2xl max-w-lg w-full border-4 border-red-600 p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <p class="text-xs font-bold text-whsblue-900">Send this link to students — it opens straight into this exact game suite, no sign-in needed:</p>
+            <div class="flex flex-col sm:flex-row gap-2">
+                <input type="text" id="share-link-input" readonly onclick="this.select()" class="flex-grow bg-whsblue-50 border border-whsblue-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-700 shadow-inner">
+                <button onclick="copyShareLink()" class="shrink-0 bg-whsblue-700 hover:bg-whsblue-800 text-white font-bold px-4 py-2 rounded-lg text-xs whitespace-nowrap transition-colors">📋 Copy Link</button>
+            </div>
+
+            <div class="bg-whsblue-50 border border-whsblue-200 rounded-xl p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                <div>
+                    <p class="text-[11px] font-black text-whsblue-900 uppercase tracking-wide mb-2">Adding it to Google Classroom:</p>
+                    <ol class="text-[11px] text-whsblue-800 font-semibold space-y-1.5 list-decimal list-inside">
+                        <li>In Classroom, create an <strong>Assignment</strong> or <strong>Material</strong> as usual.</li>
+                        <li>Click into the <strong>Description</strong> box (not the "Add link" button).</li>
+                        <li>Paste the link there — it'll appear as clickable text.</li>
+                        <li>Post it like normal.</li>
+                    </ol>
+                </div>
+                <div class="flex flex-col items-center gap-1.5">
+                    <!-- Original illustrative mockup (not a Google Classroom screenshot) showing where to paste -->
+                    <div class="bg-white border-2 border-slate-300 rounded-xl p-3 shadow-sm w-full max-w-[220px]">
+                        <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500 border-b border-slate-200 pb-1.5 mb-2">
+                            <span>📄</span><span>New Assignment</span>
+                        </div>
+                        <div class="space-y-1.5">
+                            <div class="bg-slate-100 rounded px-2 py-1.5 text-[9px] text-slate-400 font-semibold">Title</div>
+                            <div class="bg-whsgold-50 border-2 border-dashed border-whsgold-500 rounded px-2 py-2.5 text-[9px] text-whsgold-800 font-black">
+                                📋 Description — paste link here
+                            </div>
+                            <div class="flex justify-end pt-0.5">
+                                <div class="bg-slate-200 rounded px-2 py-1 text-[8px] text-slate-400 font-bold">Add link ✗</div>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="text-[9px] text-whsblue-600 font-bold text-center">Paste into Description — skip the "Add link" button</span>
+                </div>
+            </div>
+
+            <p class="text-[10px] text-whsblue-700">Why: Classroom's dedicated Link button rejects anything over ~2,024 characters, which longer game suites exceed even compressed. Pasting as text avoids that limit and skips Drive's file preview too.</p>
+
+            <button onclick="dismissShareLinkModal()" class="w-full bg-red-600 hover:bg-red-700 active:scale-95 text-white font-black py-3 rounded-xl text-sm shadow-lg transition-all">OK, Got It</button>
         </div>
     </div>
 
@@ -1062,7 +1096,7 @@
             document.getElementById('builder-content').value = '';
             document.querySelectorAll('#builder-subject-buttons .year-btn, #builder-year-buttons .year-btn').forEach(b => b.classList.remove('active'));
 
-            const shareBox = document.getElementById('share-link-box');
+            const shareBox = document.getElementById('share-link-modal');
             if (shareBox) shareBox.classList.add('hidden');
             const shareInput = document.getElementById('share-link-input');
             if (shareInput) shareInput.value = '';
@@ -1158,14 +1192,14 @@
 
                 const url = window.location.origin + window.location.pathname + '#suite=' + body;
 
-                const box = document.getElementById('share-link-box');
+                const modal = document.getElementById('share-link-modal');
                 const input = document.getElementById('share-link-input');
                 input.value = url;
-                box.classList.remove('hidden');
+                modal.classList.remove('hidden');
 
                 input.select();
                 document.execCommand('copy');
-                showToast(wasCompressed ? '🔗 Compressed share link copied!' : '🔗 Share link copied! Paste it into Google Classroom or email.');
+                showToast(wasCompressed ? '🔗 Compressed share link copied!' : '🔗 Share link copied!');
             } catch (e) {
                 console.error(e);
                 showToast('❌ Could not generate a share link for this game suite.');
@@ -1217,7 +1251,7 @@
                 a.remove();
                 setTimeout(() => URL.revokeObjectURL(url), 2000);
 
-                showToast('📥 HTML file downloaded! Open it anywhere — no internet or hosting needed.');
+                showToast('📥 Downloaded! In Google Classroom, attach it as a File (not a Link) — students must click Download, not just preview.');
             } catch (e) {
                 console.error(e);
                 showToast('❌ Something went wrong generating the download.');
@@ -1300,6 +1334,10 @@
 
         function dismissWelcomeOverlay() {
             document.getElementById('welcome-overlay').classList.add('hidden');
+        }
+
+        function dismissShareLinkModal() {
+            document.getElementById('share-link-modal').classList.add('hidden');
         }
 
         function resetGameStates() {
