@@ -53,6 +53,17 @@
         }
         @keyframes shooterBurst { 0% { transform: scale(0.4); opacity: 1; } 100% { transform: scale(2.4); opacity: 0; } }
         @keyframes wsFoundPulse { 0% { transform: scale(1); box-shadow: 0 0 0 rgba(16,185,129,0); } 40% { transform: scale(1.2); box-shadow: 0 0 14px rgba(16,185,129,0.95); } 100% { transform: scale(1); box-shadow: 0 0 0 rgba(16,185,129,0); } }
+        .arcade-cabinet-bg {
+            background:
+                radial-gradient(circle at 15% 15%, rgba(217, 70, 239, 0.22), transparent 42%),
+                radial-gradient(circle at 85% 20%, rgba(239, 68, 68, 0.18), transparent 42%),
+                radial-gradient(circle at 50% 90%, rgba(47, 86, 168, 0.28), transparent 50%),
+                linear-gradient(135deg, #0b1220 0%, #1e1b4b 50%, #0b1220 100%);
+            border: 1px solid rgba(197, 160, 89, 0.25);
+        }
+        @keyframes cabinetGlow { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.9; } }
+        .arcade-cabinet-glow { animation: cabinetGlow 4s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) { .arcade-cabinet-glow { animation: none !important; } }
         .ws-found-pulse { animation: wsFoundPulse 0.6s ease-out; position: relative; z-index: 2; }
         @keyframes muncherChomp { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.8); } }
         .muncher-player-icon { display: inline-block; animation: muncherChomp 0.5s ease-in-out infinite; }
@@ -60,8 +71,21 @@
         .muncher-ghost-icon { display: inline-block; animation: muncherFloat 1.2s ease-in-out infinite; }
         .shooter-arena { cursor: crosshair; touch-action: none; }
         .shooter-cannon { position: absolute; bottom: 6px; font-size: 1.8rem; pointer-events: none; z-index: 5; filter: drop-shadow(0 0 6px rgba(239,68,68,0.8)); transition: left 0.05s linear; transform: translateX(-50%); }
+        .shooter-cannon-hit { animation: cannonHitFlash 0.3s ease; }
+        @keyframes cannonHitFlash { 0%, 100% { filter: drop-shadow(0 0 6px rgba(239,68,68,0.8)); } 50% { filter: drop-shadow(0 0 16px rgba(255,255,255,1)) brightness(2); transform: translateX(-50%) scale(1.3); } }
         .shooter-term { transform: translateX(-50%); }
+        @keyframes shooterErratic {
+            0%   { top: -40px;             left: var(--p0); }
+            14%  { top: var(--y1);         left: var(--p1); }
+            28%  { top: var(--y2);         left: var(--p2); }
+            42%  { top: var(--y3);         left: var(--p3); }
+            56%  { top: var(--y4);         left: var(--p4); }
+            70%  { top: var(--y5);         left: var(--p5); }
+            85%  { top: var(--y6);         left: var(--p6); }
+            100% { top: calc(100% - 36px); left: var(--p7); }
+        }
         .shooter-projectile { position: absolute; width: 6px; height: 16px; background: linear-gradient(to top, #fbbf24, #ef4444); border-radius: 999px; pointer-events: none; z-index: 6; box-shadow: 0 0 8px rgba(239,68,68,0.85); }
+        .shooter-enemy-bullet { position: absolute; width: 6px; height: 16px; background: linear-gradient(to bottom, #d946ef, #6b21a8); border-radius: 999px; pointer-events: none; z-index: 6; box-shadow: 0 0 8px rgba(217,70,239,0.85); }
         .shooter-burst { position: absolute; width: 36px; height: 36px; border-radius: 999px; pointer-events: none; z-index: 6; animation: shooterBurst 0.35s ease-out forwards; background: radial-gradient(circle, rgba(255,255,255,0.95), rgba(239,68,68,0.55) 60%, transparent 72%); }
         @media (prefers-reduced-motion: reduce) {
             .game-enter, .stat-pop, .welcome-bounce, .welcome-in, .confetti-piece, .muncher-player-icon, .muncher-ghost-icon { animation: none !important; }
@@ -369,7 +393,10 @@
 
 
         <!-- ================= VIEW 2: PLAYABLE ARCADE ENGINE ================= -->
-        <section id="view-arcade" class="tab-view space-y-6 hidden">
+        <section id="view-arcade" class="tab-view hidden">
+            <div class="arcade-cabinet-bg rounded-3xl p-3 sm:p-5 shadow-2xl relative overflow-hidden">
+                <div class="hidden sm:block absolute top-3 left-1/2 -translate-x-1/2 text-[10px] font-black tracking-[0.3em] text-whsgold-400 uppercase arcade-cabinet-glow">✦ Arcade AI ✦</div>
+                <div class="space-y-6 pt-2 sm:pt-6">
             <!-- Arcade Game Switcher Bar -->
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                 <div class="flex flex-wrap items-center justify-between gap-3">
@@ -378,6 +405,9 @@
                     </span>
 
                     <div class="flex items-center space-x-3 text-xs font-semibold">
+                    <button onclick="returnToGameMenu()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1">
+                        <span>🏠 Menu</span>
+                    </button>
                     <button onclick="generateShareLink()" class="bg-whsblue-700 hover:bg-whsblue-800 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1">
                         <span>🔗 Share with Students</span>
                     </button>
@@ -424,6 +454,8 @@
             <div id="active-game-viewport" class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm min-h-[480px] flex flex-col justify-between">
                 <!-- Mini game UI rendered dynamically -->
             </div>
+                </div>
+            </div>
         </section>
 
         <!-- ================= VIEW 4: PLAYER ANALYTICS ================= -->
@@ -435,6 +467,17 @@
                     <p class="text-slate-600 text-sm leading-relaxed">
                         Evaluates accuracy, cognitive taxonomy depth according to Bloom's taxonomy, and mechanics accuracy.
                     </p>
+                </div>
+            </div>
+
+            <!-- Achievements -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-black text-slate-900 text-base">🏅 Achievements</h3>
+                    <span id="badge-count-label" class="text-[11px] font-bold text-slate-400">0/6 unlocked</span>
+                </div>
+                <div id="badge-shelf" class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    <!-- Populated by renderBadgeShelf() -->
                 </div>
             </div>
 
@@ -563,6 +606,13 @@
         }
 
         // ---------- Suite Progress + Confetti (a bit more spectacle once a suite is launched) ----------
+        // Small reusable "round X of Y" progress bar used across the round-based games, so
+        // players can see how far through a game they are at a glance rather than just reading text.
+        function miniProgressBar(current, total, color) {
+            const pct = total > 0 ? Math.round((Math.min(current, total) / total) * 100) : 0;
+            return `<div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden"><div class="bg-${color}-500 h-full transition-all duration-500" style="width:${pct}%"></div></div>`;
+        }
+
         function updateSuiteProgress() {
             const fill = document.getElementById('suite-progress-fill');
             const label = document.getElementById('suite-progress-label');
@@ -581,6 +631,62 @@
                 burstConfetti();
                 showToast("🎉 You've explored every game in this suite!");
             }
+        }
+
+        // ---------- Achievements ----------
+        const ACHIEVEMENTS = [
+            { id: 'onfire', icon: '🔥', name: 'On Fire', desc: 'Reach a 5-answer correct streak', check: () => appState.streak >= 5 },
+            { id: 'sharpshooter', icon: '🎯', name: 'Sharpshooter', desc: 'Reach a 10-answer correct streak', check: () => appState.streak >= 10 },
+            { id: 'explorer', icon: '🕹️', name: 'Arcade Explorer', desc: 'Try 5 different games in one suite', check: () => appState.playedGames.length >= 5 },
+            { id: 'champion', icon: '🏆', name: 'Suite Champion', desc: 'Play every game enabled in this suite', check: () => appState.enabledGames.length > 0 && appState.playedGames.filter(id => appState.enabledGames.includes(id)).length === appState.enabledGames.length },
+            { id: 'highscorer', icon: '💯', name: 'High Scorer', desc: 'Reach 1,000 points in a session', check: () => appState.score >= 1000 },
+            { id: 'sharpmind', icon: '🎖️', name: 'Sharp Mind', desc: '90%+ accuracy across at least 10 answers', check: () => appState.stats.totalQuestions >= 10 && (appState.stats.correctAnswers / appState.stats.totalQuestions) >= 0.9 }
+        ];
+
+        function checkAchievements() {
+            let unlockedNew = false;
+            ACHIEVEMENTS.forEach(a => {
+                if (!appState.earnedBadges.includes(a.id) && a.check()) {
+                    appState.earnedBadges.push(a.id);
+                    playSound('levelup');
+                    showToast(`${a.icon} Achievement unlocked: ${a.name}!`);
+                    unlockedNew = true;
+                }
+            });
+            if (unlockedNew) renderBadgeShelf();
+        }
+
+        function renderBadgeShelf() {
+            const shelf = document.getElementById('badge-shelf');
+            if (!shelf) return;
+            shelf.innerHTML = ACHIEVEMENTS.map(a => {
+                const unlocked = appState.earnedBadges.includes(a.id);
+                return `
+                    <div class="flex flex-col items-center text-center p-3 rounded-xl border ${unlocked ? 'bg-whsgold-50 border-whsgold-300' : 'bg-slate-50 border-slate-200 opacity-50'}">
+                        <span class="text-2xl ${unlocked ? '' : 'grayscale'}">${a.icon}</span>
+                        <span class="text-[11px] font-black text-slate-800 mt-1">${a.name}</span>
+                        <span class="text-[9px] text-slate-500 mt-0.5 leading-tight">${a.desc}</span>
+                    </div>`;
+            }).join('');
+            const countLabel = document.getElementById('badge-count-label');
+            if (countLabel) countLabel.innerText = `${appState.earnedBadges.length}/${ACHIEVEMENTS.length} unlocked`;
+        }
+
+        // Every right/wrong answer across any game should flow through here — it's the single
+        // place that updates accuracy stats, the streak counter, and checks for new achievements,
+        // so those stay meaningful across the whole suite instead of only reflecting one game.
+        function recordAnswer(isCorrect, correctPoints = 100) {
+            appState.stats.totalQuestions++;
+            if (isCorrect) {
+                appState.streak++;
+                appState.stats.correctAnswers++;
+            } else {
+                appState.streak = 0;
+                // Wrong answers cost roughly half of what that answer would have earned —
+                // never dropping the score below zero, so it stays motivating rather than punishing.
+                appState.score = Math.max(0, appState.score - Math.round(correctPoints / 2));
+            }
+            checkAchievements();
         }
 
         function burstConfetti(count = 26) {
@@ -722,13 +828,15 @@
             },
             currentData: null,
             playedGames: [],       // ids of games visited so far this suite session (for the progress bar)
-            suiteCelebrated: false // guards the one-off confetti burst when every game has been explored
+            suiteCelebrated: false, // guards the one-off confetti burst when every game has been explored
+            earnedBadges: []       // ids of achievements already unlocked this session
         };
 
         // Mini-Game Global Index Counters
         let quizIdx = 0;
         let scrambleIdx = 0;
         let tfIdx = 0;
+        let tfAdvanceTimer = null; // MythBuster Speed Dash: pending auto-advance timeout
         let clozeIdx = 0;
         let oddIdx = 0;
         let soIdx = 0;       // Sentence Builder round index
@@ -737,11 +845,12 @@
         let gtIdx = 0;       // Guess the Term round index
         let gtGuessed = [];  // Guess the Term: letters guessed so far
         let gtWrong = 0;     // Guess the Term: wrong guesses this round
+        let gtRoundRecorded = false; // Guess the Term: guards against double-counting a round's outcome
         let memoryFlipped = [];
         let memoryMatchedCount = 0;
         let sortingItems = [];
         let sortingResults = []; // Category Bucket Sort: { text, chosenBucket, correct } for items placed so far
-        let wsState = null; // Word Search: { grid, placements, foundWords, selectionStart }
+        let wsState = null; // Word Search: { grid, placements, foundWords, selection }
         let currentTimelineOrder = [];
         let muncherRoundIdx = 0;         // Term Muncher round index
         let muncherState = null;         // Term Muncher: live grid/game state for the current round
@@ -750,6 +859,8 @@
         let shooterRoundIdx = 0; // Term Shooter round index
         let shooterState = null; // Term Shooter: { prompt, options, lives, roundOver, roundWon, cannonX, shotInFlight }
         let shooterKeyHandlerAttached = false; // Term Shooter: guards against attaching the keydown listener twice
+        let shooterAdvancedMode = false; // Term Shooter: Advanced Mode toggle (persists across rounds, resets on session reset)
+        let shooterEnemyTimer = null; // Term Shooter: setTimeout handle for the enemy counter-fire loop (Advanced Mode only)
         let crosswordState = null; // Crossword: { grid, placed, size, userGrid, checked }
 
         // UI Modal Functions - Replaced by unified Prompt Builder View
@@ -880,9 +991,10 @@
                 throw new Error("No valid game data found in the JSON.");
             }
 
-            appState.activeGame = appState.enabledGames[0]; // Set first available game as active
+            appState.activeGame = null; // Land on the game-select menu instead of auto-starting one
             appState.playedGames = [];
             appState.suiteCelebrated = false;
+            appState.earnedBadges = [];
 
             resetGameStates();
             updateTopicHeader();
@@ -912,6 +1024,7 @@
                 
                 // Switch to arcade tab
                 switchTab('arcade');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
 
             } catch (e) {
                 console.error(e);
@@ -928,7 +1041,7 @@
 
             appState.currentData = null;
             appState.enabledGames = [];
-            appState.activeGame = 'quiz';
+            appState.activeGame = null;
             appState.score = 0;
             appState.streak = 0;
             appState.currentTopic = "No topic loaded";
@@ -939,8 +1052,10 @@
             };
             appState.playedGames = [];
             appState.suiteCelebrated = false;
+            appState.earnedBadges = [];
             appState.builderSubject = null;
             appState.builderYear = null;
+            shooterAdvancedMode = false;
 
             document.getElementById('builder-json-import').value = '';
             document.getElementById('builder-topic').value = '';
@@ -979,7 +1094,46 @@
             return b64;
         }
 
-        function generateShareLink() {
+        // ---------- Share-link compression ----------
+        // Uses the browser's native gzip CompressionStream (no external library needed) to shrink
+        // the encoded game data before it goes into the URL. Falls back to the older uncompressed
+        // format automatically on browsers that don't support it (e.g. Safari < 16.4).
+        async function compressString(str) {
+            if (!('CompressionStream' in window)) return null;
+            try {
+                const bytes = new TextEncoder().encode(str);
+                const cs = new CompressionStream('gzip');
+                const writer = cs.writable.getWriter();
+                writer.write(bytes);
+                writer.close();
+                const buffer = await new Response(cs.readable).arrayBuffer();
+                return new Uint8Array(buffer);
+            } catch (e) {
+                console.error('Compression failed, falling back to uncompressed:', e);
+                return null;
+            }
+        }
+        async function decompressBytes(bytes) {
+            const ds = new DecompressionStream('gzip');
+            const writer = ds.writable.getWriter();
+            writer.write(bytes);
+            writer.close();
+            const buffer = await new Response(ds.readable).arrayBuffer();
+            return new TextDecoder().decode(buffer);
+        }
+        function bytesToUrlSafeBase64(bytes) {
+            let binary = '';
+            for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+            return toUrlSafeBase64(btoa(binary));
+        }
+        function urlSafeBase64ToBytes(safe) {
+            const binary = atob(fromUrlSafeBase64(safe));
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            return bytes;
+        }
+
+        async function generateShareLink() {
             if (!appState.currentData) {
                 showToast("⚠️ Load a game suite first, then share it.");
                 return;
@@ -991,8 +1145,18 @@
                     year: appState.builderYear || null
                 };
                 const json = JSON.stringify(payload);
-                const encoded = toUrlSafeBase64(b64EncodeUnicode(json));
-                const url = window.location.origin + window.location.pathname + '#suite=' + encoded;
+
+                // Format is a single leading digit: '1' = gzip-compressed, '0' = plain base64.
+                let body, wasCompressed = false;
+                const compressed = await compressString(json);
+                if (compressed) {
+                    body = '1' + bytesToUrlSafeBase64(compressed);
+                    wasCompressed = true;
+                } else {
+                    body = '0' + toUrlSafeBase64(b64EncodeUnicode(json));
+                }
+
+                const url = window.location.origin + window.location.pathname + '#suite=' + body;
 
                 const box = document.getElementById('share-link-box');
                 const input = document.getElementById('share-link-input');
@@ -1001,7 +1165,7 @@
 
                 input.select();
                 document.execCommand('copy');
-                showToast('🔗 Share link copied! Paste it into Google Classroom or email.');
+                showToast(wasCompressed ? '🔗 Compressed share link copied!' : '🔗 Share link copied! Paste it into Google Classroom or email.');
             } catch (e) {
                 console.error(e);
                 showToast('❌ Could not generate a share link for this game suite.');
@@ -1067,10 +1231,11 @@
             loadGameSuite(parsedData);
             enterStudentMode(payload && payload.subject, payload && payload.year);
             switchTab('arcade');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             showWelcomeOverlay(parsedData.topic, payload && payload.subject, payload && payload.year);
         }
 
-        function checkForSharedSuite() {
+        async function checkForSharedSuite() {
             // 1. A suite baked directly into a downloaded HTML file takes priority — it means
             //    this exact file was opened specifically to play that suite.
             if (window.__EMBEDDED_SUITE__) {
@@ -1089,8 +1254,20 @@
             if (!hash || !hash.startsWith('#suite=')) return false;
 
             try {
-                const encoded = hash.substring(7);
-                const json = b64DecodeUnicode(fromUrlSafeBase64(encoded));
+                const body = hash.substring(7);
+                const formatFlag = body.charAt(0);
+                let json;
+                if (formatFlag === '1') {
+                    // Gzip-compressed format
+                    json = await decompressBytes(urlSafeBase64ToBytes(body.substring(1)));
+                } else if (formatFlag === '0') {
+                    // Newer plain (uncompressed) format
+                    json = b64DecodeUnicode(fromUrlSafeBase64(body.substring(1)));
+                } else {
+                    // Older links generated before compression was added had no format digit —
+                    // treat the whole body as legacy base64 for backward compatibility.
+                    json = b64DecodeUnicode(fromUrlSafeBase64(body));
+                }
                 const payload = JSON.parse(json);
                 loadSuitePayload(payload);
                 return true;
@@ -1129,6 +1306,8 @@
             quizIdx = 0;
             scrambleIdx = 0;
             tfIdx = 0;
+            clearTimeout(tfAdvanceTimer);
+            tfAdvanceTimer = null;
             clozeIdx = 0;
             oddIdx = 0;
             soIdx = 0;
@@ -1137,6 +1316,7 @@
             gtIdx = 0;
             gtGuessed = [];
             gtWrong = 0;
+            gtRoundRecorded = false;
             memoryFlipped = [];
             memoryMatchedCount = 0;
             sortingItems = [];
@@ -1149,13 +1329,18 @@
             muncherGhostInterval = null;
             shooterRoundIdx = 0;
             shooterState = null;
+            clearTimeout(shooterEnemyTimer);
+            shooterEnemyTimer = null;
             crosswordState = null;
         }
 
         // Navigation Controller
         function switchTab(tabId) {
-            // Stop the Term Muncher ghost timer whenever the user navigates away from it
+            // Stop the Term Muncher ghost timer and Term Shooter enemy-fire loop whenever the
+            // user navigates away from them
             clearInterval(muncherGhostInterval);
+            clearTimeout(shooterEnemyTimer);
+            clearTimeout(tfAdvanceTimer);
 
             document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => {
@@ -1183,6 +1368,7 @@
                 }
             } else if (tabId === 'analytics') {
                 renderAnalyticsCharts();
+                renderBadgeShelf();
             }
         }
 
@@ -1260,6 +1446,8 @@
             void container.offsetWidth; // force reflow so the animation replays
             container.classList.add('game-enter');
 
+            if (!gameType) { renderGameMenu(container); return; }
+
             if (gameType === 'quiz') renderQuizGame(container);
             else if (gameType === 'memory') renderMemoryGame(container);
             else if (gameType === 'scramble') renderScrambleGame(container);
@@ -1274,6 +1462,41 @@
             else if (gameType === 'muncher') renderMuncherGame(container);
             else if (gameType === 'shooter') renderShooterGame(container);
             else if (gameType === 'crossword') renderCrosswordGame(container);
+        }
+
+        // Landing screen shown whenever no specific game is active yet — lets students pick
+        // rather than being dropped straight into whichever game happened to be first.
+        function renderGameMenu(container) {
+            const enabledMeta = GAME_METADATA.filter(g => appState.enabledGames.includes(g.id));
+            container.innerHTML = `
+                <div class="text-center mb-6">
+                    <span class="text-4xl">🕹️</span>
+                    <h3 class="text-xl font-black text-slate-900 mt-2">Choose a Game to Play</h3>
+                    <p class="text-sm text-slate-500 mt-1">${enabledMeta.length} game${enabledMeta.length === 1 ? '' : 's'} ready in this suite — pick one below.</p>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    ${enabledMeta.map(g => `
+                        <button onclick="selectArcadeGame('${g.id}')" class="group flex flex-col items-center justify-center gap-2 p-5 rounded-2xl border-2 bg-${g.categoryColor}-50 border-${g.categoryColor}-200 hover:border-${g.categoryColor}-500 hover:-translate-y-1 hover:shadow-lg transition-all">
+                            <span class="text-4xl group-hover:scale-110 transition-transform">${g.icon}</span>
+                            <span class="text-xs font-black text-slate-800 text-center leading-tight">${g.name}</span>
+                            ${appState.playedGames.includes(g.id) ? '<span class="text-[9px] font-bold text-emerald-600">✓ Played</span>' : ''}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function selectArcadeGame(gameId) {
+            appState.activeGame = gameId;
+            resetGameStates();
+            renderArcadeSubtabs();
+            renderActiveMiniGame();
+        }
+
+        function returnToGameMenu() {
+            appState.activeGame = null;
+            renderArcadeSubtabs();
+            renderActiveMiniGame();
         }
 
         function updateTopicHeader() {
@@ -1306,6 +1529,7 @@
                         <span class="text-xs font-bold text-whsblue-600 uppercase tracking-wider">Speed Quiz • Question ${quizIdx + 1} of ${quizList.length}</span>
                         <span class="text-xs bg-whsblue-50 text-whsblue-700 px-2.5 py-1 rounded-full font-bold">${appState.currentTopic}</span>
                     </div>
+                    ${miniProgressBar(quizIdx, quizList.length, 'whsblue')}
                     <h3 class="text-xl sm:text-2xl font-black text-slate-900 leading-snug">${q.question}</h3>
                     <div class="grid grid-cols-1 gap-3 pt-2">
                         ${[...q.options].sort(() => Math.random() - 0.5).map((opt, i) => {
@@ -1333,21 +1557,19 @@
             const feedbackBox = document.getElementById('quiz-feedback-box');
             const nextBtn = document.getElementById('quiz-next-btn');
             document.querySelectorAll('.quiz-opt-btn').forEach(b => b.disabled = true);
-            appState.stats.totalQuestions++;
 
-            if (selectedIdx === q.answer) {
+            const isCorrect = selectedIdx === q.answer;
+            if (isCorrect) {
                 playSound('correct');
                 appState.score += 100 + (appState.streak * 20);
-                appState.streak++;
-                appState.stats.correctAnswers++;
                 feedbackBox.className = "p-4 rounded-xl text-xs space-y-1 bg-emerald-50 border border-emerald-200 text-emerald-900 block";
                 feedbackBox.innerHTML = `<div class="font-bold">✅ Correct! (+100 pts)</div><div>${q.explanation}</div>`;
             } else {
                 playSound('incorrect');
-                appState.streak = 0;
                 feedbackBox.className = "p-4 rounded-xl text-xs space-y-1 bg-rose-50 border border-rose-200 text-rose-900 block";
                 feedbackBox.innerHTML = `<div class="font-bold">❌ Incorrect</div><div>${q.explanation}</div>`;
             }
+            recordAnswer(isCorrect, 100);
             updateGlobalStatsUI();
             nextBtn.classList.remove('hidden');
         }
@@ -1458,6 +1680,7 @@
                     <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                         <span class="text-xs font-bold text-amber-600 uppercase tracking-wider">Word Scramble • ${scrambleIdx + 1} of ${scrambleList.length}</span>
                     </div>
+                    ${miniProgressBar(scrambleIdx, scrambleList.length, 'amber')}
                     <div class="space-y-1"><span class="text-xs text-slate-400 font-bold uppercase">Clue:</span><p class="text-base font-bold text-slate-800">${item.hint}</p></div>
                     <div class="space-y-3 pt-2">
                         <div class="flex flex-wrap justify-center gap-2 min-h-[52px]" id="scramble-slots"></div>
@@ -1568,6 +1791,7 @@
                 playSound('incorrect');
             }
             sortingResults.push({ text: current.text, chosenBucket, correct });
+            recordAnswer(correct, 80);
             updateGlobalStatsUI();
             renderActiveMiniGame();
         }
@@ -1616,7 +1840,7 @@
             const wsData = appState.currentData.wordsearch;
             if (!wsState) {
                 const { grid, placements } = placeWordSearchGrid(wsData.words);
-                wsState = { grid, placements, foundWords: [], selectionStart: null, lastFoundWord: null };
+                wsState = { grid, placements, foundWords: [], selection: [], lastFoundWord: null };
             }
             const allFound = wsState.placements.length > 0 && wsState.foundWords.length === wsState.placements.length;
 
@@ -1626,7 +1850,7 @@
                         <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Spatial Word Search Matrix</span>
                         <span class="text-xs text-slate-500 font-semibold">Found: ${wsState.foundWords.length} / ${wsState.placements.length}</span>
                     </div>
-                    <p class="text-xs text-slate-500 font-semibold">Click the first letter of a word, then click its last letter — words run left-to-right or right-to-left.</p>
+                    <p class="text-xs text-slate-500 font-semibold">Click a word's letters one at a time, left-to-right or right-to-left — they'll turn red as you go, then green once the word is complete.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
                         <div class="md:col-span-2 bg-slate-900 p-3 rounded-2xl flex justify-center shadow-inner">
                             <div class="grid grid-cols-10 gap-1 font-mono font-black text-xs sm:text-sm" id="wordsearch-grid">
@@ -1651,7 +1875,7 @@
                 for (let c = 0; c < 10; c++) {
                     const isFoundCell = wsState.placements.some(p => wsState.foundWords.includes(p.word) && p.r === r && c >= p.c1 && c <= p.c2);
                     const isJustFound = wsState.lastFoundWord && wsState.placements.some(p => p.word === wsState.lastFoundWord && p.r === r && c >= p.c1 && c <= p.c2);
-                    const isSelected = wsState.selectionStart && wsState.selectionStart.r === r && wsState.selectionStart.c === c;
+                    const isSelected = wsState.selection.some(s => s.r === r && s.c === c);
                     let cls = 'bg-slate-800 hover:bg-rose-500 text-slate-200';
                     if (isFoundCell) cls = 'bg-emerald-600 text-white' + (isJustFound ? ' ws-found-pulse' : '');
                     else if (isSelected) cls = 'bg-rose-500 text-white';
@@ -1661,43 +1885,62 @@
             return html;
         }
 
+        // Click letters one at a time to build up a selection (shown in red) — extending in either
+        // direction along a row. A click that doesn't validly extend the current selection starts a
+        // fresh one from that cell instead. Completing an exact match turns the whole word green.
         function handleWordSearchClick(r, c) {
             if (!wsState) return;
+            const sel = wsState.selection;
 
-            if (!wsState.selectionStart) {
-                wsState.selectionStart = { r, c };
-                document.getElementById('wordsearch-grid').innerHTML = renderWordSearchCells();
-                return;
-            }
-
-            const start = wsState.selectionStart;
-            wsState.selectionStart = null;
-
-            if (start.r !== r) {
-                // This word search only places words horizontally, so a valid selection always stays in one row.
-                playSound('incorrect');
-                document.getElementById('wordsearch-grid').innerHTML = renderWordSearchCells();
-                return;
-            }
-
-            const c1 = Math.min(start.c, c);
-            const c2 = Math.max(start.c, c);
-            const match = wsState.placements.find(p => !wsState.foundWords.includes(p.word) && p.r === r && p.c1 === c1 && p.c2 === c2);
-
-            if (match) {
-                playSound('correct');
-                wsState.foundWords.push(match.word);
-                wsState.lastFoundWord = match.word;
-                appState.score += 90;
-                updateGlobalStatsUI();
-                if (wsState.foundWords.length === wsState.placements.length) {
-                    showToast('🎉 Word Search Complete!');
-                }
+            if (sel.length === 0) {
+                wsState.selection = [{ r, c }];
             } else {
-                playSound('incorrect');
+                const first = sel[0];
+                const last = sel[sel.length - 1];
+
+                if (r === last.r && c === last.c) return; // clicking the same cell again does nothing
+
+                let validExtension = false;
+                if (r === first.r) {
+                    if (sel.length === 1) {
+                        validExtension = Math.abs(c - first.c) === 1;
+                    } else {
+                        const dir = Math.sign(last.c - sel[sel.length - 2].c);
+                        validExtension = (c - last.c) === dir;
+                    }
+                }
+                wsState.selection = validExtension ? [...sel, { r, c }] : [{ r, c }];
             }
-            document.getElementById('wordsearch-grid').innerHTML = renderWordSearchCells();
-            if (match) setTimeout(() => { wsState.lastFoundWord = null; }, 650);
+
+            const current = wsState.selection;
+            if (current.length > 1) {
+                const cs = current.map(s => s.c);
+                const c1 = Math.min(...cs), c2 = Math.max(...cs);
+                const row = current[0].r;
+                if ((c2 - c1 + 1) === current.length) {
+                    const match = wsState.placements.find(p => !wsState.foundWords.includes(p.word) && p.r === row && p.c1 === c1 && p.c2 === c2);
+                    if (match) {
+                        playSound('correct');
+                        wsState.foundWords.push(match.word);
+                        wsState.lastFoundWord = match.word;
+                        wsState.selection = [];
+                        appState.score += 90;
+                        recordAnswer(true, 90);
+                        updateGlobalStatsUI();
+                        if (wsState.foundWords.length === wsState.placements.length) {
+                            showToast('🎉 Word Search Complete!');
+                        }
+                        renderWordSearchGame(document.getElementById('active-game-viewport'));
+                        setTimeout(() => {
+                            wsState.lastFoundWord = null;
+                            renderWordSearchGame(document.getElementById('active-game-viewport'));
+                        }, 650);
+                        return;
+                    }
+                }
+            }
+
+            renderWordSearchGame(document.getElementById('active-game-viewport'));
         }
 
         // 6. TIMELINE SEQUENCE ENGINE
@@ -1799,6 +2042,7 @@
                     <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                         <span class="text-xs font-bold text-teal-600 uppercase tracking-wider">MythBuster Speed Dash • Statement ${tfIdx + 1} of ${tfList.length}</span>
                     </div>
+                    ${miniProgressBar(tfIdx, tfList.length, 'teal')}
 
                     <div class="bg-gradient-to-br from-teal-900 to-slate-900 text-white p-6 rounded-2xl text-center space-y-3 shadow-md">
                         <span class="text-[10px] text-teal-400 font-bold uppercase tracking-widest">Fact Check Statement</span>
@@ -1820,9 +2064,15 @@
                 </div>
 
                 <div class="pt-6 border-t border-slate-100 flex justify-end">
-                    <button id="tf-next-btn" onclick="tfIdx++; renderActiveMiniGame();" class="hidden bg-teal-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Next Statement ➔</button>
+                    <button id="tf-next-btn" onclick="advanceTrueFalse()" class="hidden bg-teal-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Skip Wait ➔</button>
                 </div>
             `;
+        }
+
+        function advanceTrueFalse() {
+            clearTimeout(tfAdvanceTimer);
+            tfIdx++;
+            renderActiveMiniGame();
         }
 
         function answerTrueFalse(userChoice) {
@@ -1830,11 +2080,11 @@
             const fb = document.getElementById('tf-feedback');
             const nextBtn = document.getElementById('tf-next-btn');
 
+            const isCorrect = userChoice === item.answer;
             fb.classList.remove('hidden');
-            if (userChoice === item.answer) {
+            if (isCorrect) {
                 playSound('correct');
                 appState.score += 100;
-                updateGlobalStatsUI();
                 fb.className = "p-4 rounded-xl text-xs bg-emerald-50 border border-emerald-200 text-emerald-900 block";
                 fb.innerHTML = `<div class="font-bold">✅ Correct Analysis!</div><div>${item.explanation}</div>`;
             } else {
@@ -1842,7 +2092,13 @@
                 fb.className = "p-4 rounded-xl text-xs bg-rose-50 border border-rose-200 text-rose-900 block";
                 fb.innerHTML = `<div class="font-bold">❌ Incorrect</div><div>${item.explanation}</div>`;
             }
+            recordAnswer(isCorrect, 100);
+            updateGlobalStatsUI();
             nextBtn.classList.remove('hidden');
+            // Speed Dash keeps the pace moving on its own — auto-advance after a beat so players
+            // don't have to click through every statement (the button above still lets them skip the wait).
+            clearTimeout(tfAdvanceTimer);
+            tfAdvanceTimer = setTimeout(advanceTrueFalse, 1400);
         }
 
         // 8. CLOZE CONTEXT FILL ENGINE
@@ -1865,6 +2121,7 @@
                     <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                         <span class="text-xs font-bold text-orange-600 uppercase tracking-wider">Cloze Context Fill • Passage ${clozeIdx + 1} of ${clozeList.length}</span>
                     </div>
+                    ${miniProgressBar(clozeIdx, clozeList.length, 'orange')}
 
                     <div class="bg-orange-50/50 border border-orange-200 p-6 rounded-2xl text-slate-900 text-lg leading-relaxed font-semibold">
                         "${item.passage}"
@@ -1895,11 +2152,11 @@
             const fb = document.getElementById('cloze-feedback');
             const nextBtn = document.getElementById('cloze-next-btn');
 
+            const isCorrect = chosen === item.missing;
             fb.classList.remove('hidden');
-            if (chosen === item.missing) {
+            if (isCorrect) {
                 playSound('correct');
                 appState.score += 120;
-                updateGlobalStatsUI();
                 fb.className = "p-3 rounded-xl text-xs font-bold bg-emerald-50 border border-emerald-200 text-emerald-800 block";
                 fb.innerText = `✅ Correct! "${chosen}" fits the context contextually.`;
             } else {
@@ -1907,6 +2164,8 @@
                 fb.className = "p-3 rounded-xl text-xs font-bold bg-rose-50 border border-rose-200 text-rose-800 block";
                 fb.innerText = `❌ Incorrect. The missing term was "${item.missing}".`;
             }
+            recordAnswer(isCorrect, 120);
+            updateGlobalStatsUI();
             nextBtn.classList.remove('hidden');
         }
 
@@ -1956,11 +2215,11 @@
             const fb = document.getElementById('odd-feedback');
             const nextBtn = document.getElementById('odd-next-btn');
 
+            const isCorrect = chosenIdx === item.intruderIdx;
             fb.classList.remove('hidden');
-            if (chosenIdx === item.intruderIdx) {
+            if (isCorrect) {
                 playSound('correct');
                 appState.score += 150;
-                updateGlobalStatsUI();
                 fb.className = "p-4 rounded-xl text-xs bg-emerald-50 border border-emerald-200 text-emerald-900 block";
                 fb.innerHTML = `<div class="font-bold">✅ Correct Intruder Identified!</div><div>${item.reason}</div>`;
             } else {
@@ -1968,6 +2227,8 @@
                 fb.className = "p-4 rounded-xl text-xs bg-rose-50 border border-rose-200 text-rose-900 block";
                 fb.innerHTML = `<div class="font-bold">❌ Incorrect</div><div>${item.reason}</div>`;
             }
+            recordAnswer(isCorrect, 150);
+            updateGlobalStatsUI();
             nextBtn.classList.remove('hidden');
         }
 
@@ -1997,6 +2258,7 @@
                         <span class="text-xs font-bold text-violet-600 uppercase tracking-wider">Sentence Builder • Sentence ${soIdx + 1} of ${list.length}</span>
                         <button onclick="clearSentenceBuild()" class="text-[10px] font-bold text-slate-400 hover:text-violet-600 hover:underline">Clear</button>
                     </div>
+                    ${miniProgressBar(soIdx, list.length, 'violet')}
 
                     <p class="text-xs text-slate-500 font-semibold">Click the words below, in order, to build a correct, complete sentence.</p>
 
@@ -2043,11 +2305,11 @@
             const builtText = soBuilt.map(w => w.text).join(' ');
             const correctText = item.words.join(' ');
 
+            const isCorrect = builtText === correctText;
             fb.classList.remove('hidden');
-            if (builtText === correctText) {
+            if (isCorrect) {
                 playSound('correct');
                 appState.score += 150;
-                updateGlobalStatsUI();
                 fb.className = "p-4 rounded-xl text-xs bg-emerald-50 border border-emerald-200 text-emerald-900 block";
                 fb.innerHTML = `<div class="font-bold">✅ Perfect sentence order!</div>`;
             } else {
@@ -2055,6 +2317,8 @@
                 fb.className = "p-4 rounded-xl text-xs bg-rose-50 border border-rose-200 text-rose-900 block";
                 fb.innerHTML = `<div class="font-bold">❌ Not quite right.</div><div>Correct order: "${correctText}"</div>`;
             }
+            recordAnswer(isCorrect, 150);
+            updateGlobalStatsUI();
             nextBtn.classList.remove('hidden');
         }
 
@@ -2089,6 +2353,7 @@
                         <span class="text-xs font-bold text-lime-700 uppercase tracking-wider">Guess the Term • Word ${gtIdx + 1} of ${list.length}</span>
                         <span class="text-lg tracking-wider">${hearts}</span>
                     </div>
+                    ${miniProgressBar(gtIdx, list.length, 'lime')}
 
                     <div class="bg-lime-50 border border-lime-200 rounded-xl p-4 text-center">
                         <span class="text-[10px] text-lime-600 font-bold uppercase tracking-widest block mb-1">Hint</span>
@@ -2116,7 +2381,7 @@
                 </div>
 
                 <div class="pt-6 border-t border-slate-100 flex justify-end">
-                    ${roundOver ? `<button onclick="gtIdx++; gtGuessed=[]; gtWrong=0; renderActiveMiniGame();" class="bg-lime-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Next Word ➔</button>` : ''}
+                    ${roundOver ? `<button onclick="gtIdx++; gtGuessed=[]; gtWrong=0; gtRoundRecorded=false; renderActiveMiniGame();" class="bg-lime-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Next Word ➔</button>` : ''}
                 </div>
             `;
         }
@@ -2132,11 +2397,17 @@
                 const uniqueLetters = [...new Set(word.replace(/[^A-Z]/g, '').split(''))];
                 if (uniqueLetters.every(l => gtGuessed.includes(l))) {
                     appState.score += 120;
+                    if (!gtRoundRecorded) { gtRoundRecorded = true; recordAnswer(true, 120); }
                     updateGlobalStatsUI();
                 }
             } else {
                 playSound('incorrect');
                 gtWrong++;
+                if (gtWrong >= GT_MAX_WRONG && !gtRoundRecorded) {
+                    gtRoundRecorded = true;
+                    recordAnswer(false, 120);
+                    updateGlobalStatsUI();
+                }
             }
             renderActiveMiniGame();
         }
@@ -2174,7 +2445,8 @@
                 player: { r: playerStart.r, c: playerStart.c },
                 lives: 3,
                 roundOver: false,
-                roundWon: false
+                roundWon: false,
+                started: false // ghosts stay frozen until the player's first move
             };
         }
 
@@ -2226,8 +2498,8 @@
 
             if (!muncherState) {
                 initMuncherRound(list[muncherRoundIdx]);
-                startMuncherGhostTimer();
                 attachMuncherKeyboardControls();
+                // Ghosts stay frozen until the player's first move — see muncherMove().
             }
 
             container.innerHTML = `
@@ -2236,24 +2508,31 @@
                         <span class="text-xs font-bold text-fuchsia-600 uppercase tracking-wider">Term Muncher • Round ${muncherRoundIdx + 1} of ${list.length}</span>
                         <span id="muncher-lives" class="text-lg">${'❤️'.repeat(muncherState.lives)}</span>
                     </div>
+                    ${miniProgressBar(muncherRoundIdx, list.length, 'fuchsia')}
 
-                    <div class="bg-gradient-to-br from-fuchsia-900 to-slate-900 text-white p-4 rounded-2xl text-center">
-                        <span class="text-[10px] text-fuchsia-300 font-bold uppercase tracking-widest block mb-1">Eat only:</span>
-                        <span class="text-lg font-black">${muncherState.category}</span>
-                    </div>
-
-                    <div id="muncher-grid-inner" class="flex justify-center overflow-x-auto"></div>
-
-                    <div id="muncher-status" class="hidden"></div>
-
-                    <div class="flex flex-col items-center gap-1.5 pt-2">
-                        <button onclick="muncherMove(-1,0)" class="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 hover:bg-fuchsia-100 border-2 border-slate-200 hover:border-fuchsia-300 rounded-xl font-black text-xl transition-colors">↑</button>
-                        <div class="flex gap-1.5">
-                            <button onclick="muncherMove(0,-1)" class="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 hover:bg-fuchsia-100 border-2 border-slate-200 hover:border-fuchsia-300 rounded-xl font-black text-xl transition-colors">←</button>
-                            <button onclick="muncherMove(1,0)" class="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 hover:bg-fuchsia-100 border-2 border-slate-200 hover:border-fuchsia-300 rounded-xl font-black text-xl transition-colors">↓</button>
-                            <button onclick="muncherMove(0,1)" class="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 hover:bg-fuchsia-100 border-2 border-slate-200 hover:border-fuchsia-300 rounded-xl font-black text-xl transition-colors">→</button>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div class="lg:order-2 lg:col-span-1 space-y-3">
+                            <div class="bg-gradient-to-br from-fuchsia-900 to-slate-900 text-white p-4 rounded-2xl text-center">
+                                <span class="text-[10px] text-fuchsia-300 font-bold uppercase tracking-widest block mb-1">Eat only:</span>
+                                <span class="text-lg font-black">${muncherState.category}</span>
+                            </div>
+                            <div class="hidden lg:block bg-slate-50 border border-slate-200 rounded-xl p-3 text-[10px] text-slate-500 font-semibold leading-relaxed">
+                                ${muncherState.started ? 'Avoid wrong terms and the 👻 ghosts — one touch costs a life.' : 'Ghosts are asleep until your first move — take a moment to plan your route!'}
+                            </div>
                         </div>
-                        <p class="text-[10px] text-slate-400 font-semibold pt-1">Arrow keys / WASD, or tap the pad. Dodge the 👻 ghosts!</p>
+                        <div class="lg:order-1 lg:col-span-2 space-y-4">
+                            <div id="muncher-grid-inner" class="flex justify-center overflow-x-auto"></div>
+                            <div id="muncher-status" class="hidden"></div>
+                            <div class="flex flex-col items-center gap-1.5 pt-2">
+                                <button onclick="muncherMove(-1,0)" class="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 hover:bg-fuchsia-100 border-2 border-slate-200 hover:border-fuchsia-300 rounded-xl font-black text-xl transition-colors">↑</button>
+                                <div class="flex gap-1.5">
+                                    <button onclick="muncherMove(0,-1)" class="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 hover:bg-fuchsia-100 border-2 border-slate-200 hover:border-fuchsia-300 rounded-xl font-black text-xl transition-colors">←</button>
+                                    <button onclick="muncherMove(1,0)" class="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 hover:bg-fuchsia-100 border-2 border-slate-200 hover:border-fuchsia-300 rounded-xl font-black text-xl transition-colors">↓</button>
+                                    <button onclick="muncherMove(0,1)" class="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 hover:bg-fuchsia-100 border-2 border-slate-200 hover:border-fuchsia-300 rounded-xl font-black text-xl transition-colors">→</button>
+                                </div>
+                                <p class="text-[10px] text-slate-400 font-semibold pt-1">Arrow keys / WASD, or tap the pad. ${muncherState.started ? 'Dodge the 👻 ghosts!' : 'Ghosts wake up on your first move.'}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -2302,6 +2581,11 @@
         function muncherMove(dr, dc) {
             if (!muncherState || muncherState.roundOver) return;
 
+            if (!muncherState.started) {
+                muncherState.started = true;
+                startMuncherGhostTimer();
+            }
+
             const nr = muncherState.player.r + dr;
             const nc = muncherState.player.c + dc;
             if (nr < 0 || nr >= MUNCHER_ROWS || nc < 0 || nc >= MUNCHER_COLS) return; // wall — ignore
@@ -2319,6 +2603,7 @@
                 correctTerm.eaten = true;
                 playSound('correct');
                 appState.score += 60;
+                recordAnswer(true, 60);
                 updateGlobalStatsUI();
                 if (muncherState.correctTerms.every(t => t.eaten)) {
                     muncherRoundWon();
@@ -2330,6 +2615,8 @@
                     incorrectTerm.eaten = true;
                     playSound('incorrect');
                     muncherState.lives--;
+                    recordAnswer(false, 60);
+                    updateGlobalStatsUI();
                     if (muncherState.lives <= 0) { muncherGameOver(); return; }
                 }
             }
@@ -2408,6 +2695,8 @@
             muncherState.roundOver = true;
             muncherState.lives = 0;
             clearInterval(muncherGhostInterval);
+            appState.score = Math.max(0, appState.score - 30); // failing the round costs a modest flat penalty
+            updateGlobalStatsUI();
             const statusEl = document.getElementById('muncher-status');
             statusEl.className = "p-4 rounded-xl text-sm font-bold bg-rose-50 border border-rose-200 text-rose-900 text-center space-y-2";
             statusEl.innerHTML = `<div>❌ Out of lives! The ghosts got you.</div><button onclick="muncherState=null; renderActiveMiniGame();" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold px-4 py-2 rounded-xl text-xs">Retry Round</button>`;
@@ -2418,8 +2707,22 @@
         const SHOOTER_MAX_LIVES = 3;
         const SHOOTER_PROJECTILE_SPEED = 720; // px per second
 
+        // Generates six Y checkpoints (as % of arena height, oscillating up and down within an
+        // overall downward trend) and eight X checkpoints for an erratic, "whizzing" flight path.
+        function generateErraticPath() {
+            const yBands = [[8, 20], [1, 10], [28, 40], [13, 26], [52, 65], [38, 50]];
+            const ys = yBands.map(([lo, hi]) => (lo + Math.random() * (hi - lo)).toFixed(1) + '%');
+            const ps = Array.from({ length: 8 }, () => (8 + Math.random() * 84).toFixed(1) + '%');
+            return { ys, ps };
+        }
+
         function initShooterRound(roundData) {
-            const options = [roundData.correct, ...roundData.distractors].map((text, i) => ({
+            let sourceTexts = [roundData.correct, ...roundData.distractors];
+            if (shooterAdvancedMode) {
+                sourceTexts = sourceTexts.concat(roundData.distractors); // one extra decoy pass = more terms on screen
+            }
+
+            const options = sourceTexts.map((text, i) => ({
                 id: 'r' + Math.random().toString(36).slice(2) + '-' + i,
                 text,
                 isCorrect: text === roundData.correct,
@@ -2427,14 +2730,25 @@
             }));
             options.sort(() => Math.random() - 0.5);
 
-            // Give each term its own randomized diagonal path (start/mid/end X) and speed so
-            // they drift and cross over one another instead of all falling in neat straight lanes.
+            // Give each term its own randomized flight path and speed so they drift and cross
+            // over one another. In Advanced Mode, some terms get an erratic whizzing path instead
+            // of a smooth diagonal one, and everything moves faster overall.
             options.forEach((opt, i) => {
-                opt.startX = 10 + Math.random() * 80;
-                opt.midX = 10 + Math.random() * 80;
-                opt.endX = 10 + Math.random() * 80;
-                opt.fallDuration = 6.5 + Math.random() * 4.5;  // 6.5s–11s
-                opt.fallDelay = i * 0.4 + Math.random() * 0.5; // staggered starts
+                const erratic = shooterAdvancedMode && Math.random() < 0.4;
+                opt.erratic = erratic;
+                if (erratic) {
+                    const path = generateErraticPath();
+                    opt.p = path.ps;
+                    opt.y = path.ys;
+                    opt.fallDuration = 5 + Math.random() * 3;   // 5s–8s: urgent
+                    opt.fallDelay = i * 0.3 + Math.random() * 0.4;
+                } else {
+                    opt.startX = 10 + Math.random() * 80;
+                    opt.midX = 10 + Math.random() * 80;
+                    opt.endX = 10 + Math.random() * 80;
+                    opt.fallDuration = shooterAdvancedMode ? (4.5 + Math.random() * 3) : (6.5 + Math.random() * 4.5);
+                    opt.fallDelay = i * (shooterAdvancedMode ? 0.3 : 0.4) + Math.random() * 0.5;
+                }
             });
 
             shooterState = {
@@ -2472,49 +2786,160 @@
                 attachShooterKeyboardControls();
             }
 
+            const arenaHeightClass = shooterAdvancedMode ? 'h-80 sm:h-96' : 'h-80';
+
             container.innerHTML = `
                 <div class="space-y-4">
                     <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-3">
                         <span class="text-xs font-bold text-red-600 uppercase tracking-wider">Term Shooter • Round ${shooterRoundIdx + 1} of ${list.length}</span>
                         <span id="shooter-lives" class="text-lg">${'❤️'.repeat(shooterState.lives)}</span>
                     </div>
+                    ${miniProgressBar(shooterRoundIdx, list.length, 'red')}
 
-                    <div class="bg-gradient-to-br from-red-900 to-slate-900 text-white p-4 rounded-2xl text-center">
-                        <span class="text-[10px] text-red-300 font-bold uppercase tracking-widest block mb-1">Shoot:</span>
-                        <span class="text-lg font-black">${shooterState.prompt}</span>
+                    <div class="flex items-center justify-center gap-2">
+                        <button onclick="toggleShooterMode(false)" class="px-3 py-1.5 rounded-lg text-[11px] font-black transition-all ${!shooterAdvancedMode ? 'bg-red-600 text-white shadow' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">🎮 Normal</button>
+                        <button onclick="toggleShooterMode(true)" class="px-3 py-1.5 rounded-lg text-[11px] font-black transition-all ${shooterAdvancedMode ? 'bg-gradient-to-r from-purple-600 to-red-600 text-white shadow' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">🔥 Advanced</button>
                     </div>
 
-                    <div id="shooter-arena" class="shooter-arena relative bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl overflow-hidden h-80 border border-slate-700"></div>
+                    <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-1">
+                        <span class="text-xs font-black text-red-600 uppercase tracking-wide">🎯 Target: <span class="text-slate-700 normal-case font-bold">${shooterState.prompt}</span></span>
+                        ${shooterAdvancedMode ? '<span class="text-[10px] font-bold text-purple-600">⚠️ 2x points — dodge enemy fire!</span>' : ''}
+                    </div>
+
+                    <div id="shooter-arena" class="shooter-arena relative bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl overflow-hidden ${arenaHeightClass} border ${shooterAdvancedMode ? 'border-purple-500/50' : 'border-slate-700'}"></div>
 
                     <div id="shooter-status" class="hidden"></div>
 
-                    <p class="text-[10px] text-slate-400 font-semibold text-center">Move your mouse (or ← →) to aim the cannon, then click or tap to fire!</p>
+                    <p class="text-[10px] text-slate-400 font-semibold text-center">Move your mouse (or ← →) to aim the cannon, then click or tap to fire!${shooterAdvancedMode ? ' Watch for incoming enemy fire.' : ''}</p>
                 </div>
             `;
             spawnShooterTerms();
             setupShooterArenaControls();
+            if (shooterAdvancedMode) startEnemyFireLoop();
+        }
+
+        function toggleShooterMode(enabled) {
+            if (shooterAdvancedMode === enabled) return;
+            shooterAdvancedMode = enabled;
+            clearTimeout(shooterEnemyTimer);
+            shooterState = null; // restart the current round fresh in the new mode
+            renderActiveMiniGame();
         }
 
         function spawnShooterTerms() {
             const arena = document.getElementById('shooter-arena');
             if (!arena || !shooterState) return;
-            arena.innerHTML = `<div class="shooter-cannon" id="shooter-cannon" style="left:${shooterState.cannonX}%" aria-hidden="true">🔫</div>`;
+            arena.innerHTML = `
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none px-6 z-0">
+                    <span class="text-white/10 font-black text-2xl sm:text-4xl text-center leading-tight select-none">${shooterState.prompt}</span>
+                </div>
+                <div class="shooter-cannon" id="shooter-cannon" style="left:${shooterState.cannonX}%" aria-hidden="true">🔫</div>
+            `;
 
             shooterState.options.forEach(opt => {
                 if (opt.removed) return;
                 const el = document.createElement('div');
                 el.id = 'shooter-' + opt.id;
                 el.className = 'shooter-term absolute px-3 py-1.5 rounded-lg text-xs sm:text-sm font-black bg-white text-slate-900 shadow-lg border-2 border-red-200';
-                el.style.setProperty('--start-x', opt.startX + '%');
-                el.style.setProperty('--mid-x', opt.midX + '%');
-                el.style.setProperty('--end-x', opt.endX + '%');
-                el.style.left = opt.startX + '%';
                 el.style.top = '-40px';
-                el.style.animation = `shooterFall ${opt.fallDuration}s linear ${opt.fallDelay}s forwards`;
+                if (opt.erratic) {
+                    el.style.setProperty('--p0', opt.p[0]);
+                    el.style.setProperty('--p1', opt.p[1]);
+                    el.style.setProperty('--p2', opt.p[2]);
+                    el.style.setProperty('--p3', opt.p[3]);
+                    el.style.setProperty('--p4', opt.p[4]);
+                    el.style.setProperty('--p5', opt.p[5]);
+                    el.style.setProperty('--p6', opt.p[6]);
+                    el.style.setProperty('--p7', opt.p[7]);
+                    el.style.setProperty('--y1', opt.y[0]);
+                    el.style.setProperty('--y2', opt.y[1]);
+                    el.style.setProperty('--y3', opt.y[2]);
+                    el.style.setProperty('--y4', opt.y[3]);
+                    el.style.setProperty('--y5', opt.y[4]);
+                    el.style.setProperty('--y6', opt.y[5]);
+                    el.style.left = opt.p[0];
+                    el.style.animation = `shooterErratic ${opt.fallDuration}s linear ${opt.fallDelay}s forwards`;
+                    el.classList.add('border-purple-300');
+                } else {
+                    el.style.setProperty('--start-x', opt.startX + '%');
+                    el.style.setProperty('--mid-x', opt.midX + '%');
+                    el.style.setProperty('--end-x', opt.endX + '%');
+                    el.style.left = opt.startX + '%';
+                    el.style.animation = `shooterFall ${opt.fallDuration}s linear ${opt.fallDelay}s forwards`;
+                }
                 el.innerText = opt.text;
                 el.addEventListener('animationend', () => handleShooterLanded(opt.id));
                 arena.appendChild(el);
             });
+        }
+
+        // ---------- Advanced Mode: enemy counter-fire ----------
+        const SHOOTER_ENEMY_SPEED = 260; // px/sec
+
+        function startEnemyFireLoop() {
+            clearTimeout(shooterEnemyTimer);
+            const fire = () => {
+                if (!shooterState || shooterState.roundOver || !shooterAdvancedMode) return;
+                fireEnemyProjectile();
+                shooterEnemyTimer = setTimeout(fire, 1300 + Math.random() * 1300);
+            };
+            shooterEnemyTimer = setTimeout(fire, 1600 + Math.random() * 1000);
+        }
+
+        function fireEnemyProjectile() {
+            const arena = document.getElementById('shooter-arena');
+            if (!arena || !shooterState || shooterState.roundOver) return;
+            const aliveWrong = shooterState.options.filter(o => !o.removed && !o.isCorrect);
+            if (aliveWrong.length === 0) return;
+            const source = aliveWrong[Math.floor(Math.random() * aliveWrong.length)];
+            const el = document.getElementById('shooter-' + source.id);
+            if (!el) return;
+
+            const arenaRect = arena.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            let ex = elRect.left - arenaRect.left + elRect.width / 2;
+            let ey = elRect.top - arenaRect.top + elRect.height / 2;
+
+            const bullet = document.createElement('div');
+            bullet.className = 'shooter-enemy-bullet';
+            bullet.style.left = (ex - 3) + 'px';
+            bullet.style.top = ey + 'px';
+            arena.appendChild(bullet);
+
+            let lastTime = performance.now();
+            function step(now) {
+                if (!shooterState || shooterState.roundOver || !document.body.contains(bullet)) { bullet.remove(); return; }
+                const dt = (now - lastTime) / 1000;
+                lastTime = now;
+                ey += SHOOTER_ENEMY_SPEED * dt;
+                bullet.style.top = ey + 'px';
+
+                const currentArenaRect = arena.getBoundingClientRect();
+                if (ey >= currentArenaRect.height - 28) {
+                    const cannonX = (shooterState.cannonX / 100) * currentArenaRect.width;
+                    if (Math.abs(ex - cannonX) < 28) {
+                        handleEnemyHitPlayer();
+                    }
+                    bullet.remove();
+                    return;
+                }
+                requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        function handleEnemyHitPlayer() {
+            if (!shooterState || shooterState.roundOver) return;
+            playSound('incorrect');
+            shooterState.lives--;
+            updateShooterLivesDisplay();
+            updateGlobalStatsUI();
+            const cannon = document.getElementById('shooter-cannon');
+            if (cannon) {
+                cannon.classList.add('shooter-cannon-hit');
+                setTimeout(() => { if (cannon) cannon.classList.remove('shooter-cannon-hit'); }, 300);
+            }
+            if (shooterState.lives <= 0) shooterRoundLost();
         }
 
         // ---------- Aiming + firing ----------
@@ -2632,7 +3057,9 @@
                 if (py < -20) {
                     projectile.remove();
                     shooterState.shotInFlight = false;
-                    return; // clean miss — no penalty, just try again
+                    appState.score = Math.max(0, appState.score - 25); // a clean miss costs a small flat penalty
+                    updateGlobalStatsUI();
+                    return;
                 }
 
                 requestAnimationFrame(step);
@@ -2652,15 +3079,19 @@
         }
 
         function resolveShooterHit(opt) {
+            const correctPoints = shooterAdvancedMode ? 200 : 100;
             if (opt.isCorrect) {
                 playSound('correct');
-                appState.score += 100;
+                appState.score += correctPoints;
+                recordAnswer(true, correctPoints);
                 updateGlobalStatsUI();
                 shooterRoundWon();
             } else {
                 playSound('incorrect');
                 shooterState.lives--;
+                recordAnswer(false, correctPoints);
                 updateShooterLivesDisplay();
+                updateGlobalStatsUI();
                 if (shooterState.lives <= 0) shooterRoundLost();
             }
         }
@@ -2686,6 +3117,7 @@
             shooterState.roundOver = true;
             shooterState.roundWon = true;
             clearRemainingShooterTerms();
+            clearTimeout(shooterEnemyTimer);
             playSound('levelup');
             const statusEl = document.getElementById('shooter-status');
             statusEl.className = "p-4 rounded-xl text-sm font-bold bg-emerald-50 border border-emerald-200 text-emerald-900 text-center";
@@ -2698,11 +3130,14 @@
             shooterState.roundOver = true;
             shooterState.lives = 0;
             clearRemainingShooterTerms();
+            clearTimeout(shooterEnemyTimer);
+            appState.score = Math.max(0, appState.score - 30); // failing the round costs a modest flat penalty
             const correctOpt = shooterState.options.find(o => o.isCorrect);
             const statusEl = document.getElementById('shooter-status');
             statusEl.className = "p-4 rounded-xl text-sm font-bold bg-rose-50 border border-rose-200 text-rose-900 text-center space-y-2";
             statusEl.innerHTML = `<div>❌ Missed it! The correct answer was "${correctOpt ? correctOpt.text : ''}".</div><button onclick="shooterState=null; renderActiveMiniGame();" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl text-xs">Retry Round</button>`;
             updateShooterLivesDisplay();
+            updateGlobalStatsUI();
         }
 
         // 14. CROSSWORD ENGINE (best-effort auto-interlocking grid — not a guaranteed-dense
@@ -2897,6 +3332,7 @@
 
         function checkCrossword() {
             if (!crosswordState) return;
+            const alreadyChecked = crosswordState.checked;
             crosswordState.checked = true;
 
             let correctCount = 0, totalCount = 0;
@@ -2912,11 +3348,17 @@
             if (totalCount > 0 && correctCount === totalCount) {
                 playSound('win');
                 appState.score += 300;
-                updateGlobalStatsUI();
             } else {
                 playSound(correctCount > totalCount * 0.5 ? 'correct' : 'incorrect');
             }
 
+            // Count the whole puzzle as a single answer event, and only on the first check —
+            // otherwise clicking "Check Puzzle" repeatedly while fixing letters would inflate
+            // the accuracy stats and streak every time.
+            if (!alreadyChecked && totalCount > 0) {
+                recordAnswer(correctCount === totalCount, 300);
+            }
+            updateGlobalStatsUI();
             renderActiveMiniGame();
         }
 
@@ -2995,7 +3437,7 @@
         }
 
         // Initialization
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             // Capture the page's own pristine markup as early as possible — before anything else
             // mutates the DOM — so "Download as HTML" can use it as a clean template later.
             try { window.__PRISTINE_HTML__ = '<!DOCTYPE html>\n' + document.documentElement.outerHTML; } catch (e) { window.__PRISTINE_HTML__ = null; }
@@ -3004,7 +3446,7 @@
             initPromptBuilder();
             // If this page was opened via a "Share with Students" link, load that suite directly.
             // Otherwise, don't auto-load presets — start fresh on the builder tab.
-            if (!checkForSharedSuite()) {
+            if (!(await checkForSharedSuite())) {
                 switchTab('promptbuilder');
             }
         });
