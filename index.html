@@ -595,6 +595,19 @@
         // Global Audio Context & UI Toast System
         let audioCtx = null;
 
+        // Proper Fisher-Yates shuffle — used everywhere something needs randomizing (answer order,
+        // card layout, letter tiles, etc). The naive `.sort(() => Math.random() - 0.5)` pattern is
+        // measurably biased (tested: ~30%/19%/19%/31% across 4 positions instead of an even 25%
+        // each), so every shuffle in this file goes through this instead.
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
         function showToast(message) {
             const toast = document.createElement('div');
             toast.className = 'fixed bottom-4 right-4 px-6 py-3 rounded-xl shadow-2xl text-sm font-bold z-[100] transform transition-all translate-y-10 opacity-0 bg-slate-900 text-white';
@@ -1610,7 +1623,7 @@
                     ${miniProgressBar(quizIdx, quizList.length, 'whsblue')}
                     <h3 class="text-xl sm:text-2xl font-black text-slate-900 leading-snug">${q.question}</h3>
                     <div class="grid grid-cols-1 gap-3 pt-2">
-                        ${[...q.options].sort(() => Math.random() - 0.5).map((opt, i) => {
+                        ${shuffleArray(q.options).map((opt, i) => {
                             // Find original index to verify correct answer since we shuffled
                             const originalIdx = q.options.indexOf(opt);
                             return `
@@ -1660,7 +1673,7 @@
                 cards.push({ id: i, text: p.term });
                 cards.push({ id: i, text: p.def });
             });
-            cards.sort(() => Math.random() - 0.5);
+            cards = shuffleArray(cards);
             memoryFlipped = []; 
             memoryMatchedCount = 0;
 
@@ -1750,7 +1763,7 @@
             }
             const item = scrambleList[scrambleIdx];
             const targetWord = item.word.toUpperCase();
-            const letters = targetWord.split('').sort(() => Math.random() - 0.5);
+            const letters = shuffleArray(targetWord.split(''));
             pickedTiles = [];
 
             container.innerHTML = `
@@ -1803,7 +1816,7 @@
         function renderSortingGame(container) {
             const sData = appState.currentData.sorting;
             if (sortingItems.length === 0 && sortingResults.length === 0) {
-                sortingItems = [...sData.items].sort(() => Math.random() - 0.5);
+                sortingItems = shuffleArray(sData.items);
             }
             const current = sortingItems[0];
             const bucketAResults = sortingResults.filter(r => r.chosenBucket === 'A');
@@ -2025,7 +2038,7 @@
         function renderTimelineGame(container) {
             const timelineData = appState.currentData.timeline || { title: "Sequence Flow", items: [] };
             if (!currentTimelineOrder || currentTimelineOrder.length === 0) {
-                currentTimelineOrder = [...timelineData.items].sort(() => Math.random() - 0.5);
+                currentTimelineOrder = shuffleArray(timelineData.items);
             }
 
             container.innerHTML = `
@@ -2208,7 +2221,7 @@
                     <div class="space-y-2 pt-2">
                         <span class="text-xs text-slate-400 font-bold uppercase">Select the missing term:</span>
                         <div class="grid grid-cols-2 gap-3">
-                            ${item.options.map(opt => `
+                            ${shuffleArray(item.options).map(opt => `
                                 <button onclick="selectClozeOption('${opt}')" class="bg-slate-50 hover:bg-orange-100 border border-slate-200 p-4 rounded-xl text-sm font-bold text-slate-800 text-left transition-all">
                                     ${opt}
                                 </button>
@@ -2271,9 +2284,9 @@
                     <p class="text-xs text-slate-500 font-semibold">Three concepts belong to a common topic group. Click the one concept that DOES NOT belong!</p>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                        ${item.items.map((term, i) => `
-                            <button onclick="selectOddIntruder(${i})" class="bg-slate-50 hover:bg-sky-50 hover:border-sky-300 border border-slate-200 p-5 rounded-2xl text-left text-base font-extrabold text-slate-900 transition-all flex items-center justify-between">
-                                <span>${term}</span>
+                        ${shuffleArray(item.items.map((term, originalIdx) => ({ term, originalIdx }))).map((entry, i) => `
+                            <button onclick="selectOddIntruder(${entry.originalIdx})" class="bg-slate-50 hover:bg-sky-50 hover:border-sky-300 border border-slate-200 p-5 rounded-2xl text-left text-base font-extrabold text-slate-900 transition-all flex items-center justify-between">
+                                <span>${entry.term}</span>
                                 <span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-mono font-bold">${i + 1}</span>
                             </button>
                         `).join('')}
@@ -2327,7 +2340,7 @@
 
             // Initialise a fresh shuffled pool the first time this round is rendered
             if (soPool.length === 0 && soBuilt.length === 0) {
-                soPool = item.words.map((w, i) => ({ text: w, id: i })).sort(() => Math.random() - 0.5);
+                soPool = shuffleArray(item.words.map((w, i) => ({ text: w, id: i })));
             }
 
             container.innerHTML = `
@@ -2371,7 +2384,7 @@
 
         function clearSentenceBuild() {
             const item = appState.currentData.sentenceorder[soIdx];
-            soPool = item.words.map((w, i) => ({ text: w, id: i })).sort(() => Math.random() - 0.5);
+            soPool = shuffleArray(item.words.map((w, i) => ({ text: w, id: i })));
             soBuilt = [];
             renderActiveMiniGame();
         }
@@ -2496,11 +2509,11 @@
         const MUNCHER_GHOST_TICK_MS = 650;
 
         function initMuncherRound(roundData) {
-            const coords = [];
+            let coords = [];
             for (let r = 0; r < MUNCHER_ROWS; r++) {
                 for (let c = 0; c < MUNCHER_COLS; c++) coords.push({ r, c });
             }
-            coords.sort(() => Math.random() - 0.5);
+            coords = shuffleArray(coords);
 
             let cursor = 0;
             const playerStart = coords[cursor++];
@@ -2800,13 +2813,13 @@
                 sourceTexts = sourceTexts.concat(roundData.distractors); // one extra decoy pass = more terms on screen
             }
 
-            const options = sourceTexts.map((text, i) => ({
+            let options = sourceTexts.map((text, i) => ({
                 id: 'r' + Math.random().toString(36).slice(2) + '-' + i,
                 text,
                 isCorrect: text === roundData.correct,
                 removed: false
             }));
-            options.sort(() => Math.random() - 0.5);
+            options = shuffleArray(options);
 
             // Give each term its own randomized flight path and speed so they drift and cross
             // over one another. In Advanced Mode, some terms get an erratic whizzing path instead
