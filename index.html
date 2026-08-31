@@ -315,6 +315,7 @@
                                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Select Game Modes</label>
                                     <button onclick="selectAllGames(true)" class="text-[10px] font-bold text-whsblue-700 hover:underline">Select All</button>
                                 </div>
+                                <div id="depth-advisory-banner" class="hidden mt-2 mb-1 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-[10px] text-amber-800 font-semibold leading-relaxed"></div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2" id="builder-game-toggles">
                                     <!-- Dynamically populated toggles -->
                                 </div>
@@ -811,20 +812,20 @@
 
         // Definitions of all game modes
         const GAME_METADATA = [
-            { id: 'quiz', name: 'Speed Quiz Run', icon: '⚡', category: 'Recall', bloom: 'Remember', color: 'whsblue', desc: 'Multiple choice trivia with misconception options and explanations.' },
-            { id: 'memory', name: 'Memory Match Cards', icon: '🃏', category: 'Vocab', bloom: 'Understand', color: 'emerald', desc: 'Interactive flip cards pairing key terms directly with definitions.' },
-            { id: 'scramble', name: 'Word Scramble', icon: '🔤', category: 'Vocab', bloom: 'Remember', color: 'amber', desc: 'Letter-by-letter anagram solver using contextual definition clues.' },
-            { id: 'sorting', name: 'Category Bucket Sort', icon: '📦', category: 'Classification', bloom: 'Analyze', color: 'purple', desc: 'Classify concepts into two distinct target category buckets.' },
-            { id: 'wordsearch', name: 'Spatial Word Search', icon: '🧩', category: 'Recall', bloom: 'Remember', color: 'rose', desc: '10x10 matrix word search algorithmically generated.' },
-            { id: 'timeline', name: 'Timeline Sequence', icon: '⏳', category: 'Logic', bloom: 'Analyze', color: 'cyan', desc: 'Arrange historical events, biological steps, or code in chronological order.' },
-            { id: 'truefalse', name: 'MythBuster Speed Dash', icon: '⚡', category: 'Recall', bloom: 'Evaluate', color: 'teal', desc: 'Rapid-fire True or False decision maker with countdown timer.' },
-            { id: 'cloze', name: 'Cloze Context Fill', icon: '✍️', category: 'Vocab', bloom: 'Apply', color: 'orange', desc: 'Fill key missing terminology blanks within context passages.' },
-            { id: 'oddoneout', name: 'Odd One Out Intruder', icon: '🧐', category: 'Classification', bloom: 'Evaluate', color: 'sky', desc: 'Identify the intruder concept that does not belong in the group.' },
-            { id: 'sentenceorder', name: 'Sentence Builder', icon: '🧱', category: 'Logic', bloom: 'Apply', color: 'violet', desc: 'Click shuffled words into the correct order to build a complete, accurate sentence.' },
-            { id: 'guessterm', name: 'Guess the Term', icon: '⌨️', category: 'Vocab', bloom: 'Remember', color: 'lime', desc: 'Classic letter-by-letter word guesser with a limited number of misses per term.' },
-            { id: 'muncher', name: 'Term Muncher', icon: '👾', category: 'Classification', bloom: 'Analyze', color: 'fuchsia', desc: 'Live arcade chase — move around a grid eating only the terms that fit the category while dodging wrong-answer ghosts.' },
-            { id: 'shooter', name: 'Term Shooter', icon: '🎯', category: 'Recall', bloom: 'Apply', color: 'red', desc: 'Falling-answer arcade shooter — click the correct term before it hits the ground, and dodge the decoys.' },
-            { id: 'crossword', name: 'Crossword Challenge', icon: '📰', category: 'Vocab', bloom: 'Remember', color: 'amber', desc: 'Classic interlocking crossword grid, auto-built from your topic\'s key terms and clues.' }
+            { id: 'quiz', name: 'Speed Quiz Run', icon: '⚡', category: 'Recall', bloom: 'Remember', color: 'whsblue', depth: 'analytical', desc: 'Multiple choice trivia with misconception options and explanations.' },
+            { id: 'memory', name: 'Memory Match Cards', icon: '🃏', category: 'Vocab', bloom: 'Understand', color: 'emerald', depth: 'foundational', desc: 'Interactive flip cards pairing key terms directly with definitions.' },
+            { id: 'scramble', name: 'Word Scramble', icon: '🔤', category: 'Vocab', bloom: 'Remember', color: 'amber', depth: 'foundational', desc: 'Letter-by-letter anagram solver using contextual definition clues.' },
+            { id: 'sorting', name: 'Category Bucket Sort', icon: '📦', category: 'Classification', bloom: 'Analyze', color: 'purple', depth: 'analytical', desc: 'Classify concepts into two distinct target category buckets.' },
+            { id: 'wordsearch', name: 'Spatial Word Search', icon: '🧩', category: 'Recall', bloom: 'Remember', color: 'rose', depth: 'foundational', desc: '10x10 matrix word search algorithmically generated.' },
+            { id: 'timeline', name: 'Timeline Sequence', icon: '⏳', category: 'Logic', bloom: 'Analyze', color: 'cyan', depth: 'analytical', desc: 'Arrange historical events, biological steps, or code in chronological order.' },
+            { id: 'truefalse', name: 'MythBuster Speed Dash', icon: '⚡', category: 'Recall', bloom: 'Evaluate', color: 'teal', depth: 'analytical', desc: 'Rapid-fire True or False decision maker with countdown timer.' },
+            { id: 'cloze', name: 'Cloze Context Fill', icon: '✍️', category: 'Vocab', bloom: 'Apply', color: 'orange', depth: 'foundational', desc: 'Fill key missing terminology blanks within context passages.' },
+            { id: 'oddoneout', name: 'Odd One Out Intruder', icon: '🧐', category: 'Classification', bloom: 'Evaluate', color: 'sky', depth: 'analytical', desc: 'Identify the intruder concept that does not belong in the group.' },
+            { id: 'sentenceorder', name: 'Sentence Builder', icon: '🧱', category: 'Logic', bloom: 'Apply', color: 'violet', depth: 'foundational', desc: 'Click shuffled words into the correct order to build a complete, accurate sentence.' },
+            { id: 'guessterm', name: 'Guess the Term', icon: '⌨️', category: 'Vocab', bloom: 'Remember', color: 'lime', depth: 'foundational', desc: 'Classic letter-by-letter word guesser with a limited number of misses per term.' },
+            { id: 'muncher', name: 'Term Muncher', icon: '👾', category: 'Classification', bloom: 'Analyze', color: 'fuchsia', depth: 'analytical', desc: 'Live arcade chase — move around a grid eating only the terms that fit the category while dodging wrong-answer ghosts.' },
+            { id: 'shooter', name: 'Term Shooter', icon: '🎯', category: 'Recall', bloom: 'Apply', color: 'red', depth: 'analytical', desc: 'Falling-answer arcade shooter — click the correct term before it hits the ground, and dodge the decoys.' },
+            { id: 'crossword', name: 'Crossword Challenge', icon: '📰', category: 'Vocab', bloom: 'Remember', color: 'amber', depth: 'foundational', desc: 'Classic interlocking crossword grid, auto-built from your topic\'s key terms and clues.' }
         ];
         GAME_METADATA.forEach(g => { g.categoryColor = CATEGORY_COLORS[g.category] || g.color; });
 
@@ -916,15 +917,45 @@
                 gamesInCat.forEach(g => {
                     const isChecked = appState.promptSelections.includes(g.id);
                     const toggle = document.createElement('label');
-                    toggle.className = `flex items-center p-3 border rounded-xl cursor-pointer transition-colors ${isChecked ? `bg-${catColor}-50 border-${catColor}-300` : 'bg-white border-slate-200 hover:bg-slate-50'}`;
+                    toggle.className = `flex items-center justify-between gap-2 p-3 border rounded-xl cursor-pointer transition-colors ${isChecked ? `bg-${catColor}-50 border-${catColor}-300` : 'bg-white border-slate-200 hover:bg-slate-50'}`;
+                    const depthTag = g.depth === 'analytical'
+                        ? `<span class="text-[8px] font-black uppercase tracking-wide bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap" title="Scales well to senior, analytical-level thinking">🧠 Analytical</span>`
+                        : `<span class="text-[8px] font-black uppercase tracking-wide bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap" title="A recall/mechanic-based game — great for building foundations, lighter as a senior assessment activity">🌱 Foundational</span>`;
                     toggle.innerHTML = `
-                        <input type="checkbox" value="${g.id}" ${isChecked ? 'checked' : ''} onchange="togglePromptSelection('${g.id}')" class="w-4 h-4 text-${catColor}-600 rounded border-slate-300 focus:ring-${catColor}-500 shrink-0">
-                        <span class="ml-3 text-sm font-bold text-slate-800">${g.icon} ${g.name}</span>
+                        <span class="flex items-center min-w-0">
+                            <input type="checkbox" value="${g.id}" ${isChecked ? 'checked' : ''} onchange="togglePromptSelection('${g.id}')" class="w-4 h-4 text-${catColor}-600 rounded border-slate-300 focus:ring-${catColor}-500 shrink-0">
+                            <span class="ml-3 text-sm font-bold text-slate-800 truncate">${g.icon} ${g.name}</span>
+                        </span>
+                        ${depthTag}
                     `;
                     container.appendChild(toggle);
                 });
             });
             buildDynamicPrompt();
+            updateDepthAdvisory();
+        }
+
+        // Flags a heads-up when a senior year level is selected alongside games whose mechanic
+        // caps out at simple recall (e.g. Sentence Builder, Word Scramble) — those are still fine
+        // as warm-ups, but shouldn't be the main event for NCEA-level assessment.
+        function updateDepthAdvisory() {
+            const banner = document.getElementById('depth-advisory-banner');
+            if (!banner) return;
+
+            const year = appState.builderYear || '';
+            const isSenior = /Year 1[1-3]/.test(year);
+
+            const selectedFoundational = GAME_METADATA.filter(g => appState.promptSelections.includes(g.id) && g.depth === 'foundational');
+
+            if (!isSenior || selectedFoundational.length === 0) {
+                banner.classList.add('hidden');
+                return;
+            }
+
+            const names = selectedFoundational.map(g => g.name).join(', ');
+            const plural = selectedFoundational.length > 1;
+            banner.classList.remove('hidden');
+            banner.innerHTML = `⚠️ <strong>${year} selected:</strong> ${names} ${plural ? 'are' : 'is a'} recall/mechanic-based game${plural ? 's' : ''} — good as a quick warm-up, but for senior assessment the 🧠 Analytical games below (Quiz, Bucket Sort, Timeline, True/False, Odd One Out, Term Muncher, Term Shooter, Crossword) will push students to think harder.`;
         }
 
         function togglePromptSelection(gameId) {
@@ -960,6 +991,7 @@
             btnEl.classList.add('active');
             playSound('click');
             buildDynamicPrompt();
+            updateDepthAdvisory();
         }
 
         function buildDynamicPrompt() {
@@ -981,6 +1013,14 @@
 
             promptText += `Generate a highly accurate, structured JSON object containing questions, vocabulary, and logic puzzles specifically for this topic${sourceContent ? ', drawn directly from the source material above' : ''}.\n`;
             promptText += `Calibrate vocabulary, sentence complexity, and question difficulty to New Zealand curriculum expectations for ${audience}${year ? ' (use the relevant NCEA achievement standard level where applicable)' : ''}.\n`;
+
+            const isSeniorYear = /Year 1[1-3]/.test(year || '');
+            const selectedFoundationalGames = GAME_METADATA.filter(g => appState.promptSelections.includes(g.id) && g.depth === 'foundational');
+            if (isSeniorYear && selectedFoundationalGames.length > 0) {
+                const names = selectedFoundationalGames.map(g => g.name).join(', ');
+                promptText += `Note: ${names} are simple recall-based formats. Even so, push the actual terms, clues, and passages used in them to genuine NCEA-level sophistication — precise technical vocabulary and nuanced concepts, not introductory-level content — since the format is simple but the audience is senior.\n`;
+            }
+
             promptText += `DO NOT include any conversational text or markdown formatting outside of the JSON. Output ONLY valid JSON matching this exact schema:\n\n`;
             
             promptText += `{\n  "topic": "${topic}",\n`;
