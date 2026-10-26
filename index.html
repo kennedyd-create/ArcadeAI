@@ -177,6 +177,93 @@
                 linear-gradient(to right, rgba(226, 232, 240, 0.4) 1px, transparent 1px),
                 linear-gradient(to bottom, rgba(226, 232, 240, 0.4) 1px, transparent 1px);
         }
+        /* ================= GAME SHOW GAMES (Quiz Board, Prize Ladder, Survey Showdown, Spin the Wheel, Vocab Bingo, Two Truths, Escape Room) ================= */
+        .gs-show { --gs-card:#10285f; --gs-ink:#f1f5ff; --gs-mut:#b4c3e6; --gs-line:#2c4a94; --gs-soft:#163578; --gs-ok:#059669; --gs-okbg:rgba(5,150,105,.28); --gs-bad:#e11d48; --gs-badbg:rgba(225,29,72,.28); --gs-gold:#e4c084; color: var(--gs-ink); }
+        .gs-panel { background: linear-gradient(160deg,#001a52 0%,#0f3488 70%,#2a1a6e 100%); border: 1px solid #1c3a7a; border-radius: 1.25rem; padding: 1.1rem; position: relative; }
+        .gs-title { font-size: 1.15rem; font-weight: 800; text-align: center; margin-bottom: .9rem; color: var(--gs-gold); }
+        .gs-q { font-size: 1.15rem; font-weight: 800; line-height: 1.35; margin: 0 0 1rem; }
+        .gs-opt { display: flex; gap: .65rem; align-items: center; width: 100%; text-align: left; background: var(--gs-card); color: var(--gs-ink); border: 2px solid var(--gs-line); border-radius: .85rem; padding: .7rem .85rem; font-size: .95rem; font-weight: 700; cursor: pointer; transition: transform .08s, border-color .15s; font-family: inherit; }
+        .gs-opt:hover:not(:disabled) { border-color: #c5a059; transform: translateX(2px); }
+        .gs-opt i { font-style: normal; width: 1.6rem; height: 1.6rem; border-radius: .5rem; background: var(--gs-soft); display: inline-flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 800; flex: none; }
+        .gs-opt.ok { background: var(--gs-okbg); border-color: var(--gs-ok); }
+        .gs-opt.bad { background: var(--gs-badbg); border-color: var(--gs-bad); }
+        .gs-opt.dim { opacity: .35; }
+        .gs-opt:disabled { cursor: default; }
+        .gs-optgrid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+        .gs-fb { margin-top: .8rem; border-radius: .8rem; padding: .6rem .9rem; font-weight: 700; font-size: .85rem; }
+        .gs-fb.ok { background: var(--gs-okbg); } .gs-fb.bad { background: var(--gs-badbg); }
+        .gs-btn { border: 0; border-radius: .7rem; padding: .55rem 1rem; font-weight: 800; font-size: .8rem; display: inline-flex; align-items: center; gap: .35rem; cursor: pointer; font-family: inherit; transition: transform .08s, filter .15s; }
+        .gs-btn:active { transform: scale(.96); } .gs-btn:disabled { opacity: .45; cursor: not-allowed; }
+        .gs-gold { background: #a9843f; color: #fff; box-shadow: 0 3px 10px rgba(169,132,63,.4); } .gs-gold:hover:not(:disabled) { filter: brightness(1.1); }
+        .gs-ghost { background: var(--gs-card); color: var(--gs-ink); border: 1px solid var(--gs-line); } .gs-ghost:hover:not(:disabled) { background: var(--gs-soft); }
+        .gs-row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+        .gs-prog { height: .5rem; background: var(--gs-soft); border-radius: 99px; overflow: hidden; margin-bottom: .8rem; } .gs-prog i { display: block; height: 100%; background: #c5a059; transition: width .4s; }
+        .gs-shake { animation: gsShake .4s; } @keyframes gsShake { 20%,60% { transform: translateX(-6px); } 40%,80% { transform: translateX(6px); } }
+        .gs-ovl { position: fixed; inset: 0; background: rgba(5,12,30,.72); z-index: 90; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(3px); }
+        .gs-mbox { background: linear-gradient(160deg,#001a52,#0f3488); border: 2px solid #c5a059; border-radius: 1.2rem; max-width: 640px; width: 100%; max-height: 92vh; overflow: auto; padding: 1.2rem; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+        /* Quiz Board */
+        .gs-qb { display: grid; grid-template-columns: repeat(var(--n), minmax(0,1fr)); gap: .5rem; }
+        .gs-qh { overflow-wrap: anywhere; hyphens: auto; background: #0b1a3d; border: 1px solid var(--gs-line); border-radius: .65rem; padding: .6rem .35rem; text-align: center; font-weight: 800; font-size: .8rem; color: var(--gs-gold); display: flex; align-items: center; justify-content: center; min-height: 3.2rem; }
+        .gs-qc { background: linear-gradient(180deg,#1c4fc4,#0f3488); border: 2px solid #3c6be0; border-radius: .75rem; color: #ffd978; font-size: clamp(1.1rem,3.4vw,1.8rem); font-weight: 800; padding: 1rem .25rem; font-family: 'JetBrains Mono', monospace; text-shadow: 0 2px 0 rgba(0,0,0,.35); cursor: pointer; }
+        .gs-qc:hover:not(:disabled) { transform: scale(1.04); border-color: #ffd978; } .gs-qc:disabled { cursor: default; text-shadow: none; }
+        .gs-qc.ok { background: #065f46; border-color: #10b981; color: #fff; } .gs-qc.bad { background: #7f1d1d; border-color: #f43f5e; color: #fff; }
+        /* Prize Ladder */
+        .gs-lad { display: grid; grid-template-columns: 1fr 180px; gap: 1.1rem; }
+        .gs-rungs { display: flex; flex-direction: column-reverse; gap: .25rem; }
+        .gs-rung { display: flex; justify-content: space-between; gap: .5rem; padding: .3rem .6rem; border-radius: .5rem; font-family: 'JetBrains Mono', monospace; font-size: .75rem; font-weight: 600; color: var(--gs-mut); }
+        .gs-rung.safe { color: #e4c084; } .gs-rung.cur { background: #e4c084; color: #1e293b; font-weight: 800; } .gs-rung.won { color: #6ee7b7; }
+        .gs-hint { background: rgba(228,192,132,.18); border: 1px dashed #e4c084; border-radius: .7rem; padding: .55rem .75rem; font-size: .85rem; margin-bottom: .7rem; }
+        /* Survey Showdown */
+        .gs-board { max-width: 620px; margin: 0 auto .9rem; background: #0b1a3d; border: 3px solid #e4c084; border-radius: 1rem; padding: .7rem; display: grid; gap: .4rem; }
+        .gs-slot { display: flex; align-items: center; gap: .6rem; background: linear-gradient(180deg,#1c4fc4,#0f3488); border-radius: .55rem; padding: .55rem .75rem; min-height: 2.7rem; font-weight: 800; }
+        .gs-slot .n { width: 1.6rem; height: 1.6rem; border-radius: 50%; background: #0b1a3d; color: #e4c084; display: flex; align-items: center; justify-content: center; font-size: .8rem; flex: none; }
+        .gs-slot .t { flex: 1; font-size: 1rem; text-transform: uppercase; letter-spacing: .03em; }
+        .gs-slot .p { font-family: 'JetBrains Mono', monospace; color: #ffd978; background: #0b1a3d; border-radius: .45rem; padding: .1rem .55rem; }
+        .gs-slot.hid .t, .gs-slot.hid .p { visibility: hidden; } .gs-slot.miss { opacity: .55; background: #334155; }
+        .gs-flip { animation: gsFlip .5s; } @keyframes gsFlip { 0% { transform: rotateX(90deg); } 100% { transform: none; } }
+        .gs-strikes { font-size: 2rem; font-weight: 800; color: #f43f5e; text-align: center; min-height: 2.6rem; letter-spacing: .2em; }
+        .gs-teams { display: flex; gap: .6rem; justify-content: center; margin-bottom: .8rem; flex-wrap: wrap; }
+        .gs-team { background: #0b1a3d; border: 2px solid var(--gs-line); border-radius: .8rem; padding: .35rem 1rem; font-weight: 800; text-align: center; } .gs-team.on { border-color: #e4c084; box-shadow: 0 0 0 3px rgba(228,192,132,.3); } .gs-team b { display: block; font-size: 1.25rem; color: #ffd978; }
+        .gs-input { flex: 1; min-width: 11rem; background: #0b1a3d; border: 1px solid var(--gs-line); border-radius: .7rem; padding: .6rem .8rem; color: var(--gs-ink); font-weight: 600; font-size: .95rem; font-family: inherit; }
+        /* Spin the Wheel */
+        .gs-wheel-wrap { position: relative; width: min(360px, 86vw); margin: 0 auto; } .gs-wheel-wrap canvas { width: 100%; height: auto; display: block; filter: drop-shadow(0 8px 18px rgba(0,0,0,.5)); }
+        .gs-ptr { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 32px solid #e4c084; filter: drop-shadow(0 2px 3px rgba(0,0,0,.6)); z-index: 2; }
+        /* Vocab Bingo */
+        .gs-bingo { display: grid; gap: .5rem; max-width: 560px; margin: 0 auto; }
+        .gs-bcell { overflow-wrap: anywhere; background: var(--gs-card); border: 2px solid var(--gs-line); border-radius: .75rem; min-height: 4.6rem; padding: .35rem; font-weight: 800; font-size: clamp(.7rem,2.4vw,1rem); color: var(--gs-ink); display: flex; align-items: center; justify-content: center; text-align: center; position: relative; cursor: pointer; font-family: inherit; transition: transform .1s; }
+        .gs-bcell:hover:not(:disabled) { border-color: #e4c084; transform: scale(1.03); }
+        .gs-bcell.on { background: #047857; border-color: #34d399; color: #fff; } .gs-bcell.on::after { content: '✓'; position: absolute; top: 2px; right: 7px; font-size: .85rem; }
+        .gs-bcell.line { box-shadow: 0 0 0 3px #ffd978; } .gs-bcell.wrong { animation: gsShake .4s; background: var(--gs-badbg); }
+        .gs-bclue { background: #0b1a3d; border: 2px solid #e4c084; border-radius: .9rem; padding: .85rem 1rem; text-align: center; font-size: 1.1rem; font-weight: 700; margin: 0 auto 1rem; max-width: 620px; }
+        .gs-bclue small { display: block; color: #e4c084; font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .25rem; }
+        /* Escape Room */
+        .gs-door { display: flex; gap: .6rem; align-items: center; background: #0b1a3d; border: 2px solid var(--gs-line); border-radius: .9rem; padding: .6rem .85rem; margin-bottom: .5rem; }
+        .gs-door .dn { font-size: 1.6rem; } .gs-door .dd { flex: 1; font-size: .8rem; } .gs-door .dg { font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; font-weight: 800; color: #ffd978; width: 2.6rem; text-align: center; }
+        .gs-door.cur { border-color: #e4c084; } .gs-door.done { border-color: #10b981; }
+        .gs-keypad { display: flex; gap: .6rem; justify-content: center; align-items: center; margin: 1rem 0; flex-wrap: wrap; }
+        .gs-keypad input { width: min(240px,60vw); font-family: 'JetBrains Mono', monospace; font-size: 1.75rem; letter-spacing: .35em; text-align: center; background: #0b1a3d; color: #ffd978; border: 3px solid #e4c084; border-radius: .75rem; padding: .5rem; }
+        .gs-timer { font-family: 'JetBrains Mono', monospace; color: #e4c084; font-weight: 800; }
+        @media (max-width: 700px) { .gs-lad { grid-template-columns: 1fr; } .gs-rungs { flex-direction: row; flex-wrap: wrap; } .gs-rung { font-size: .62rem; padding: .2rem .4rem; } }
+        @media (max-width: 560px) { .gs-optgrid { grid-template-columns: 1fr; } .gs-panel { padding: .65rem; } .gs-bingo { gap: .4rem; } .gs-bcell { min-height: 3.7rem; font-size: .66rem; padding: .2rem .15rem; overflow-wrap: break-word; } .gs-qh { font-size: .68rem; padding: .4rem .15rem; } .gs-qc { font-size: 1.05rem; padding: .75rem .1rem; } }
+        @media (prefers-reduced-motion: reduce) { .gs-flip, .gs-shake, .gs-bcell.wrong { animation: none !important; } }
+        .gs-stats { display: flex; gap: .7rem; justify-content: center; flex-wrap: wrap; }
+        .gs-st { background: #0b1a3d; border: 1px solid var(--gs-line); border-radius: .8rem; padding: .5rem 1rem; min-width: 5.5rem; }
+        .gs-st b { display: block; font-size: 1.3rem; color: #ffd978; } .gs-st span { font-size: .7rem; color: var(--gs-mut); }
+        .gs-box { background: #0b1a3d; border: 2px solid #e4c084; border-radius: 1rem; padding: 1rem; margin-top: .9rem; }
+        /* Venn Sorter */
+        .gs-vn-bank { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; background: rgba(11,26,61,.6); border-radius: .9rem; padding: .7rem; min-height: 3.6rem; margin-bottom: 1rem; }
+        .gs-vn-chip { background: var(--gs-card); border: 2px solid var(--gs-line); border-radius: .65rem; padding: .5rem .75rem; font-weight: 700; font-size: .85rem; color: var(--gs-ink); text-align: left; cursor: pointer; font-family: inherit; }
+        .gs-vn-chip.sel { border-color: #e4c084; box-shadow: 0 0 0 3px rgba(228,192,132,.3); transform: scale(1.04); }
+        .gs-vn-chip.ok { background: var(--gs-okbg); border-color: var(--gs-ok); cursor: default; }
+        .gs-vn-chip.bad { background: var(--gs-badbg); border-color: var(--gs-bad); animation: gsShake .4s; }
+        .gs-vn-zones { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .7rem; }
+        .gs-vn-zone { border: 3px dashed var(--gs-line); border-radius: 1.1rem; padding: .6rem; min-height: 11rem; display: flex; flex-direction: column; gap: .5rem; cursor: pointer; transition: background .15s; }
+        .gs-vn-zone:hover { background: rgba(255,255,255,.05); }
+        .gs-vn-zone h4 { margin: 0 0 .25rem; text-align: center; font-size: .85rem; font-weight: 800; overflow-wrap: anywhere; }
+        .gs-vn-zone.l { border-color: #3b82f6; } .gs-vn-zone.b { border-color: #a855f7; } .gs-vn-zone.r { border-color: #10b981; }
+        .gs-vn-zone.l h4 { color: #93c5fd; } .gs-vn-zone.b h4 { color: #d8b4fe; } .gs-vn-zone.r h4 { color: #6ee7b7; }
+        .gs-vn-hint { text-align: center; color: var(--gs-mut); font-size: .8rem; margin: 0 0 .6rem; font-weight: 600; }
+        @media (max-width: 560px) { .gs-vn-zones { grid-template-columns: 1fr; } .gs-vn-zone { min-height: 5rem; } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-whsblue-600 selection:text-white">
@@ -313,8 +400,12 @@
                             <div>
                                 <div class="flex justify-between items-end">
                                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Select Game Modes</label>
-                                    <button onclick="selectAllGames(true)" class="text-[10px] font-bold text-whsblue-700 hover:underline">Select All</button>
+                                    <span class="flex items-center gap-3">
+                                        <button onclick="selectAllGames(true)" class="text-[10px] font-bold text-whsblue-700 hover:underline">Select All</button>
+                                        <button onclick="selectAllGames(false)" class="text-[10px] font-bold text-slate-500 hover:underline">Clear</button>
+                                    </span>
                                 </div>
+                                <div id="choose-games-banner" class="mt-2 p-3 rounded-xl text-center text-sm font-black leading-snug shadow-md" style="background:linear-gradient(135deg,#ffd978,#f5b83d);color:#3a2a00;border:2px solid #c5a059"></div>
                                 <div id="depth-advisory-banner" class="hidden mt-2 mb-1 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-[10px] text-amber-800 font-semibold leading-relaxed"></div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2" id="builder-game-toggles">
                                     <!-- Dynamically populated toggles -->
@@ -838,7 +929,15 @@
             { id: 'guessterm', name: 'Guess the Term', icon: '⌨️', category: 'Vocab', bloom: 'Remember', color: 'lime', depth: 'foundational', desc: 'Classic letter-by-letter word guesser with a limited number of misses per term.' },
             { id: 'muncher', name: 'Term Muncher', icon: '👾', category: 'Classification', bloom: 'Analyze', color: 'fuchsia', depth: 'analytical', desc: 'Live arcade chase — move around a grid eating only the terms that fit the category while dodging wrong-answer ghosts.' },
             { id: 'shooter', name: 'Term Shooter', icon: '🎯', category: 'Recall', bloom: 'Apply', color: 'red', depth: 'analytical', desc: 'Falling-answer arcade shooter — click the correct term before it hits the ground, and dodge the decoys.' },
-            { id: 'crossword', name: 'Crossword Challenge', icon: '📰', category: 'Vocab', bloom: 'Remember', color: 'amber', depth: 'foundational', desc: 'Classic interlocking crossword grid, auto-built from your topic\'s key terms and clues.' }
+            { id: 'crossword', name: 'Crossword Challenge', icon: '📰', category: 'Vocab', bloom: 'Remember', color: 'amber', depth: 'foundational', desc: 'Classic interlocking crossword grid, auto-built from your topic\'s key terms and clues.' },
+            { id: 'quizboard', name: 'Quiz Board', icon: '🎯', category: 'Recall', bloom: 'Remember', color: 'whsblue', depth: 'analytical', desc: 'Quiz-show grid of categories and point values. Pick a square, answer the clue, bank the points.' },
+            { id: 'ladder', name: 'Prize Ladder', icon: '🪜', category: 'Recall', bloom: 'Apply', color: 'whsblue', depth: 'analytical', desc: 'Climb ten ever-harder questions with 50:50 and hint lifelines. Safe spots protect your points.' },
+            { id: 'showdown', name: 'Survey Showdown', icon: '📊', category: 'Recall', bloom: 'Remember', color: 'whsblue', depth: 'foundational', desc: 'Type your guesses to uncover the top answers on the board. Solo or two teams — three strikes and the round ends.' },
+            { id: 'wheel', name: 'Spin the Wheel', icon: '🎡', category: 'Recall', bloom: 'Understand', color: 'whsblue', depth: 'foundational', desc: 'Spin the wheel, land on a sub-topic, answer its question. Every segment is played once.' },
+            { id: 'bingo', name: 'Vocab Bingo', icon: '🔠', category: 'Vocab', bloom: 'Remember', color: 'emerald', depth: 'foundational', desc: 'A clue is called out — find the matching term on your bingo card. Complete lines for bonus points.' },
+            { id: 'twotruths', name: 'Two Truths & a Lie', icon: '🤥', category: 'Recall', bloom: 'Evaluate', color: 'whsblue', depth: 'analytical', desc: 'Three statements: two are true, one is a convincing lie. Spot the lie and learn why it is false.' },
+            { id: 'escape', name: 'Escape Room', icon: '🗝️', category: 'Logic', bloom: 'Apply', color: 'amber', depth: 'foundational', desc: 'Answer to unlock each door and reveal a digit of the secret code, then enter it to escape against the clock.' },
+            { id: 'venn', name: 'Venn Sorter', icon: '⭕', category: 'Classification', bloom: 'Analyze', color: 'purple', depth: 'analytical', desc: 'Compare two things: sort statements into only-A, both, or only-B.' }
         ];
         GAME_METADATA.forEach(g => { g.categoryColor = CATEGORY_COLORS[g.category] || g.color; });
 
@@ -857,6 +956,14 @@
             muncher: `  "muncher": [\n    { "category": "Short category or rule, e.g. \\"Fruits\\" or \\"Prime Numbers\\"", "correct": ["Term1", "Term2", "Term3", "Term4"], "incorrect": ["Term5", "Term6", "Term7", "Term8"] }\n  ] // Provide 4 rounds. Each round needs 4-6 "correct" terms that fit the category AND 4-6 "incorrect" terms that don't. Keep every term short: 1-3 words.`,
             shooter: `  "shooter": [\n    { "prompt": "Short question or instruction, e.g. \\"Shoot the capital of France\\"", "correct": "Paris", "distractors": ["Lyon", "Berlin", "Madrid"] }\n  ] // Provide 8 rounds. Each round needs exactly ONE "correct" answer and exactly 3 "distractors". Keep every term short: 1-3 words.`,
             crossword: `  "crossword": [\n    { "clue": "A short definition or clue for the term", "answer": "TERM" }\n  ] // Provide 8 words. Each "answer" is ONE word, UPPERCASE not required, NO spaces, 3-10 letters. Pick words that share some letters where possible so the grid interlocks well.`
+            ,quizboard: `  "quizboard": [\n    { "category": "Short category name", "clues": [\n      { "clue": "Question or statement", "options": ["Correct answer", "Wrong 1", "Wrong 2", "Wrong 3"] }\n    ] }\n  ] // Provide 4 categories, each with exactly 4 clues ordered easiest to hardest. The FIRST option is always the correct one (the game shuffles them). Cover different parts of the topic.`,
+            ladder: `  "ladder": [\n    { "question": "Question text?", "options": ["Correct answer", "Wrong 1", "Wrong 2", "Wrong 3"], "hint": "A gentle nudge that does not give the answer away" }\n  ] // Provide 10 questions ordered from easiest to hardest (1-3 recall, 4-7 understanding, 8-10 application or analysis). The FIRST option is always the correct one.`,
+            showdown: `  "showdown": [\n    { "question": "Open question with several sensible answers, e.g. \\"Name a way to save energy\\"", "answers": [\n      { "text": "Top answer", "aliases": ["other wording", "synonym"], "points": 40 }\n    ] }\n  ] // Provide 4 rounds. Each round has exactly 5 answers ranked from most to least common/important, with points totalling about 100. Answers are 1-4 words; "aliases" are other ways a student might type the same answer.`,
+            wheel: `  "wheel": [\n    { "label": "Short sub-topic (max 18 characters)", "question": "Question text?", "options": ["Correct answer", "Wrong 1", "Wrong 2", "Wrong 3"], "points": 100 }\n  ] // Provide 8 segments, each on a different sub-topic. "points" is 100, 150 or 200 by difficulty. The FIRST option is always the correct one.`,
+            bingo: `  "bingo": [\n    { "term": "Key term", "clue": "Definition or description that does NOT contain the term" }\n  ] // Provide 16 terms (1-3 words each) that are clearly different from each other, so only one term can match each clue.`,
+            twotruths: `  "twotruths": [\n    { "truths": ["True statement 1", "True statement 2"], "lie": "A believable false statement", "explanation": "One sentence on why the lie is false." }\n  ] // Provide 6 rounds. The lie must be believable (a common misconception or a small twist on a real fact) and all three statements should be a similar length.`,
+            escape: `  "escape": {\n    "story": "Two-sentence scene-setting story tied to the topic.",\n    "locks": [\n      { "name": "Door name", "scene": "One sentence describing the door", "question": "Question text?", "options": ["Correct answer", "Wrong 1", "Wrong 2", "Wrong 3"], "hint": "Short hint" }\n    ]\n  } // Provide exactly 4 locks. The FIRST option is always the correct one. Do NOT include any codes or numbers — the game makes the secret code itself.`,
+            venn: `  "venn": {\n    "leftLabel": "First thing",\n    "rightLabel": "Second thing",\n    "items": [\n      { "text": "Short statement (max 12 words)", "region": "left" }\n    ],\n    "reflection": "One thinking question for after the sort"\n  } // Compare two related things. Provide 12 statements: about 4 "left" (only the first), 4 "right" (only the second) and 4 "both". "region" must be exactly "left", "right" or "both".`
         };
 
         // Global State & Game Pointers
@@ -866,7 +973,7 @@
             streak: 0,
             activeGame: 'quiz',
             enabledGames: [],
-            promptSelections: ['quiz', 'memory', 'truefalse'], // Default checked in builder
+            promptSelections: [], // Nothing ticked by default — teachers choose as many games as they like
             builderSubject: null,
             builderYear: null,
             stats: {
@@ -911,6 +1018,495 @@
         let shooterEnemyTimer = null; // Term Shooter: setTimeout handle for the enemy counter-fire loop (Advanced Mode only)
         let crosswordState = null; // Crossword: { grid, placed, size, userGrid, checked }
 
+        // ================= GAME SHOW GAMES + VENN SORTER =================
+        // Quiz Board, Prize Ladder, Survey Showdown, Spin the Wheel, Vocab Bingo, Two Truths & a Lie,
+        // Escape Room and Venn Sorter. They share one small toolkit (gs*) so they all behave the same way:
+        //  - the AI's JSON is validated/normalised once, in loadGameSuite() (bad games are skipped with a
+        //    warning instead of crashing); the normalised data never holds per-play shuffled state, so
+        //    share links stay clean;
+        //  - every multiple-choice item is stored as options[] with the CORRECT answer FIRST — the game
+        //    shuffles at play time (Fisher-Yates) and checks correctness by option text;
+        //  - timers / animation frames / pop-up modals are tied to GS.tok, so leaving the game (menu,
+        //    another game, restart, tab switch) can never leave something running or pop a stray modal.
+        const GS = { tok: 0, timer: null, raf: null };
+        const GS_LET = 'ABCDE';
+
+        function gsReset() {
+            GS.tok++;
+            clearInterval(GS.timer); GS.timer = null;
+            cancelAnimationFrame(GS.raf); GS.raf = null;
+            gsCloseModal();
+        }
+        function gsEsc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+        function gsNorm(s) { return String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+        function gsLev(a, b) { const m = a.length, n = b.length; if (!m) return n; if (!n) return m; let p = Array.from({ length: n + 1 }, (_, i) => i); for (let i = 1; i <= m; i++) { const c = [i]; for (let j = 1; j <= n; j++) c[j] = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = c; } return p[n]; }
+        function gsQ(sel, root) { return root.querySelector(sel); }
+        function gsQA(sel, root) { return [...root.querySelectorAll(sel)]; }
+
+        // ---------- validation / normalisation (runs once when a suite loads) ----------
+        function gsStr(v, where, max = 600) {
+            if (typeof v === 'number') v = String(v);
+            if (typeof v !== 'string' || !v.trim()) throw new Error(`${where} is missing or empty`);
+            return v.trim().slice(0, max);
+        }
+        function gsOptStr(v, max = 600) { return (typeof v === 'string' || typeof v === 'number') ? String(v).trim().slice(0, max) : ''; }
+        // Map a list through fn, silently dropping items that fail, and fail only if too few survive.
+        function gsList(v, fn, min, where, max) {
+            if (!Array.isArray(v)) throw new Error(`${where} should be a list`);
+            const out = []; let firstErr = null;
+            v.forEach((x, i) => { try { out.push(fn(x && typeof x === 'object' ? x : {}, i)); } catch (e) { firstErr = firstErr || `item ${i + 1}: ${e.message}`; } });
+            if (out.length < min) throw new Error(`${where} needs at least ${min} usable items but only ${out.length} were valid${firstErr ? ` (${firstErr})` : ''}`);
+            return max ? out.slice(0, max) : out;
+        }
+        // Multiple choice → { options: [correct, wrong, wrong, ...] }. The correct answer goes FIRST.
+        // If the AI also supplied an "answer" (index, letter or the option text) we honour it.
+        function gsMC(o, where) {
+            const LP = /^\(?[A-Ea-e][\).:]\s+/;
+            if (!Array.isArray(o.options)) throw new Error(`${where}: "options" should be a list`);
+            let options = o.options.map((x, i) => gsStr(x, `${where} option ${i + 1}`, 220));
+            if (options.length < 3) throw new Error(`${where}: needs at least 3 options`);
+            options = options.slice(0, 5);
+            if (options.every(x => LP.test(x))) options = options.map(x => x.replace(LP, '').trim());
+            if (new Set(options.map(gsNorm)).size < options.length) throw new Error(`${where}: has duplicate options`);
+            let idx = 0;
+            const ans = o.answer ?? o.correct ?? o.correctAnswer;
+            if (ans !== undefined && ans !== null && ans !== '') {
+                idx = -1;
+                if (Number.isInteger(ans) && ans >= 0 && ans < options.length) idx = ans;
+                else if (typeof ans === 'string') {
+                    const a = ans.replace(LP, '').trim() || ans, n = gsNorm(a);
+                    idx = options.findIndex(x => gsNorm(x) === n);
+                    if (idx < 0 && /^[A-E]$/i.test(ans.trim())) idx = ans.trim().toUpperCase().charCodeAt(0) - 65;
+                }
+                if (idx < 0 || idx >= options.length) throw new Error(`${where}: "answer" doesn't match any option`);
+            }
+            return { options: [options[idx], ...options.filter((_, k) => k !== idx)] };
+        }
+
+        const GS_VAL = {
+            quizboard(raw) {
+                const cats = gsList(raw, (c, i) => {
+                    const category = gsStr(c.category ?? c.name, `Category ${i + 1} name`, 40);
+                    const clues = gsList(c.clues, (x, k) => ({ clue: gsStr(x.clue ?? x.question ?? x.q, `clue ${k + 1}`, 400), ...gsMC(x, `clue ${k + 1}`) }), 3, `Category “${category}”`, 5);
+                    return { category, clues };
+                }, 3, 'Quiz Board', 5);
+                const rows = Math.min(...cats.map(c => c.clues.length));
+                return cats.map(c => ({ category: c.category, clues: c.clues.slice(0, rows) }));
+            },
+            ladder(raw) {
+                return gsList(raw, (x, i) => ({ question: gsStr(x.question ?? x.q, `question ${i + 1}`, 400), hint: gsOptStr(x.hint, 200), ...gsMC(x, `question ${i + 1}`) }), 5, 'Prize Ladder', 12);
+            },
+            showdown(raw) {
+                return gsList(raw, (r, i) => {
+                    const answers = gsList(r.answers, (a, k) => ({ text: gsStr(a.text ?? a.answer, `answer ${k + 1}`, 60), aliases: (Array.isArray(a.aliases) ? a.aliases : []).map(v => gsOptStr(v, 60)).filter(Boolean).slice(0, 8), points: Number.isFinite(+a.points) && +a.points > 0 ? Math.round(+a.points) : 10 }), 3, `Round ${i + 1}`, 8);
+                    answers.sort((x, y) => y.points - x.points);
+                    return { question: gsStr(r.question ?? r.q, `Round ${i + 1} question`, 200), answers };
+                }, 2, 'Survey Showdown', 6);
+            },
+            wheel(raw) {
+                return gsList(raw, (s, i) => ({ label: gsStr(s.label, `segment ${i + 1} label`, 22), question: gsStr(s.question ?? s.q, `segment ${i + 1} question`, 400), points: [100, 150, 200].includes(+s.points) ? +s.points : 100, ...gsMC(s, `segment ${i + 1}`) }), 5, 'Spin the Wheel', 10);
+            },
+            bingo(raw) {
+                const seen = new Set();
+                const terms = gsList(raw, (t, i) => {
+                    const term = gsStr(t.term, `term ${i + 1}`, 40), clue = gsStr(t.clue ?? t.definition ?? t.def, `clue ${i + 1}`, 220);
+                    if (seen.has(gsNorm(term))) throw new Error('duplicate term');
+                    seen.add(gsNorm(term)); return { term, clue };
+                }, 9, 'Vocab Bingo');
+                return terms.slice(0, terms.length >= 16 ? 16 : 9);
+            },
+            twotruths(raw) {
+                return gsList(raw, (r, i) => {
+                    const truths = (Array.isArray(r.truths) ? r.truths : []).map((t, k) => gsStr(t, `round ${i + 1} truth ${k + 1}`, 300));
+                    if (truths.length < 2) throw new Error('needs two truths');
+                    return { truths: truths.slice(0, 2), lie: gsStr(r.lie, `round ${i + 1} lie`, 300), explanation: gsOptStr(r.explanation, 300) };
+                }, 3, 'Two Truths & a Lie', 10);
+            },
+            escape(raw) {
+                if (!raw || typeof raw !== 'object') throw new Error('should be an object with "story" and "locks"');
+                const locks = gsList(raw.locks, (l, i) => ({ name: gsStr(l.name, `lock ${i + 1} name`, 50), scene: gsOptStr(l.scene, 200), question: gsStr(l.question ?? l.q, `lock ${i + 1} question`, 400), hint: gsOptStr(l.hint, 200), ...gsMC(l, `lock ${i + 1}`) }), 3, 'Escape Room', 6);
+                return { story: gsOptStr(raw.story, 400), locks };
+            },
+            venn(raw) {
+                if (!raw || typeof raw !== 'object') throw new Error('should be an object with "leftLabel", "rightLabel" and "items"');
+                const map = r => { r = gsNorm(r); if (['left', 'a', 'first', 'only left'].includes(r)) return 'left'; if (['right', 'b', 'second', 'only right'].includes(r)) return 'right'; if (['both', 'middle', 'overlap', 'centre', 'center', 'shared', 'same'].includes(r)) return 'both'; return null; };
+                const items = gsList(raw.items, (x, i) => { const region = map(x.region); if (!region) throw new Error('"region" must be left, right or both'); return { text: gsStr(x.text, `statement ${i + 1}`, 140), region }; }, 6, 'Venn Sorter', 16);
+                if (new Set(items.map(x => x.region)).size < 2) throw new Error('all statements are in the same region');
+                return { leftLabel: gsStr(raw.leftLabel, '"leftLabel"', 40), rightLabel: gsStr(raw.rightLabel, '"rightLabel"', 40), items, reflection: gsOptStr(raw.reflection, 240) };
+            }
+        };
+
+        // ---------- shared UI toolkit ----------
+        function gsModal(html) {
+            gsCloseModal();
+            const o = document.createElement('div');
+            o.className = 'gs-ovl gs-show'; o.id = 'gs-ovl';
+            o.innerHTML = `<div class="gs-mbox" role="dialog" aria-modal="true">${html}</div>`;
+            document.body.appendChild(o);
+            return o;
+        }
+        function gsCloseModal() { const o = document.getElementById('gs-ovl'); if (o) o.remove(); }
+        function gsOptsHTML(opts) { return opts.map((o, i) => `<button class="gs-opt" data-i="${i}"><i>${GS_LET[i]}</i><span>${gsEsc(o)}</span></button>`).join(''); }
+        // Correct answer is options[0]; shuffle for play and remember the answer text.
+        function gsDeal(options) { return { options: shuffleArray(options), answer: options[0] }; }
+        // Colour the options after a pick: right one green, the picked wrong one red, the rest dimmed.
+        function gsMarkOpts(scope, dl, picked) {
+            gsQA('.gs-opt', scope).forEach(x => {
+                x.disabled = true;
+                if (dl.options[+x.dataset.i] === dl.answer) x.classList.add('ok');
+                else if (x === picked) x.classList.add('bad');
+                else x.classList.add('dim');
+            });
+        }
+        function gsShell(container, id) {
+            gsReset();
+            const m = GAME_METADATA.find(g => g.id === id), c = m.categoryColor;
+            container.innerHTML = `<div>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4 gap-2 flex-wrap">
+                    <span class="text-xs font-bold text-${c}-600 uppercase tracking-wider">${m.icon} ${m.name}</span>
+                    <span class="text-xs bg-${c}-50 text-${c}-700 px-2.5 py-1 rounded-full font-bold">${gsEsc(appState.currentTopic)}</span>
+                </div>
+                <div class="gs-show gs-panel"></div></div>`;
+            return container.querySelector('.gs-panel');
+        }
+        // Scoring bridge. Every ported game talks to Arcade's own score / streak / stats through this:
+        //   ok(pts)  → +pts and a correct answer      no(pts) → a wrong answer that was worth pts (costs pts/2)
+        //   bonus(n) → score change that isn't an answer (hints, bingo lines, speed bonus)
+        function gsCtx(root) {
+            const tok = GS.tok; let asked = 0, correct = 0;
+            const cx = {
+                live: () => tok === GS.tok && root.isConnected,
+                ok(pts) { asked++; correct++; appState.score += pts; recordAnswer(true, pts); updateGlobalStatsUI(); playSound('correct'); },
+                no(pts) { asked++; recordAnswer(false, pts); updateGlobalStatsUI(); playSound('incorrect'); },
+                bonus(n) { appState.score = Math.max(0, appState.score + n); updateGlobalStatsUI(); },
+                finish(o) {
+                    if (!cx.live()) return;
+                    gsCloseModal();
+                    const stats = [['Suite score', appState.score]];
+                    if (asked) stats.push(['Accuracy', Math.round(correct / asked * 100) + '%']);
+                    (o.stats || []).forEach(s => stats.push(s));
+                    root.innerHTML = `<div style="text-align:center;padding:1.2rem .25rem">
+                        <div style="font-size:3.2rem">${o.emoji || '🏆'}</div>
+                        <h3 style="font-size:1.5rem;font-weight:800;margin:.3rem 0;color:#ffd978">${gsEsc(o.title || 'Finished!')}</h3>
+                        <p style="color:var(--gs-mut);margin:0 0 1rem">${gsEsc(o.msg || '')}</p>
+                        <div class="gs-stats">${stats.map(s => `<div class="gs-st"><b>${gsEsc(s[1])}</b><span>${gsEsc(s[0])}</span></div>`).join('')}</div>
+                        <div class="gs-row" style="justify-content:center;margin-top:1.3rem"><button class="gs-btn gs-gold" onclick="restartCurrentGame()">↺ Play again</button><button class="gs-btn gs-ghost" onclick="returnToGameMenu()">🏠 Back to menu</button></div></div>`;
+                    playSound('win'); if (o.good !== false) burstConfetti();
+                }
+            };
+            return cx;
+        }
+
+        // ---------- 1. QUIZ BOARD ----------
+        function renderQuizBoardGame(container) {
+            const root = gsShell(container, 'quizboard'), cx = gsCtx(root);
+            const d = appState.currentData.quizboard, n = d.length, rows = d[0].clues.length; let done = 0;
+            root.innerHTML = `<div class="gs-title">Pick a square, answer the clue, bank the points</div>
+                <div class="gs-qb" style="--n:${n}">${d.map(c => `<div class="gs-qh">${gsEsc(c.category)}</div>`).join('')}${Array.from({ length: rows }, (_, r) => d.map((c, ci) => `<button class="gs-qc" data-c="${ci}" data-r="${r}">${(r + 1) * 50}</button>`).join('')).join('')}</div>`;
+            gsQA('.gs-qc', root).forEach(b => b.onclick = () => {
+                const ci = +b.dataset.c, r = +b.dataset.r, pts = (r + 1) * 50, cl = d[ci].clues[r], q = gsDeal(cl.options);
+                playSound('click');
+                const o = gsModal(`<div class="gs-row" style="justify-content:space-between"><b style="color:#e4c084">${gsEsc(d[ci].category)}</b><b style="color:#ffd978">${pts} pts</b></div><p class="gs-q" style="margin-top:.8rem">${gsEsc(cl.clue)}</p><div class="gs-optgrid">${gsOptsHTML(q.options)}</div><div id="gs-fb"></div>`);
+                gsQA('.gs-opt', o).forEach(ob => ob.onclick = () => {
+                    const good = q.options[+ob.dataset.i] === q.answer;
+                    gsMarkOpts(o, q, ob);
+                    if (good) cx.ok(pts); else cx.no(pts);
+                    b.disabled = true; b.classList.add(good ? 'ok' : 'bad'); b.textContent = good ? '✓' : '✗'; done++;
+                    gsQ('#gs-fb', o).innerHTML = `<div class="gs-fb ${good ? 'ok' : 'bad'}">${good ? `Correct! +${pts}` : `Not quite — the answer was “${gsEsc(q.answer)}”. −${Math.round(pts / 2)}`}</div><div class="gs-row" style="justify-content:flex-end;margin-top:.8rem"><button class="gs-btn gs-gold" id="gs-next">Continue →</button></div>`;
+                    gsQ('#gs-next', o).onclick = () => { gsCloseModal(); if (done === n * rows) cx.finish({ title: 'Board cleared!', emoji: '🧩', msg: 'Every square has been played.' }); };
+                });
+            });
+        }
+
+        // ---------- 2. PRIZE LADDER ----------
+        function renderLadderGame(container) {
+            const root = gsShell(container, 'ladder'), cx = gsCtx(root);
+            const d = appState.currentData.ladder, n = d.length;
+            const vals = Array.from({ length: n }, (_, k) => 50 + 25 * k);
+            const cum = vals.map((_, k) => vals.slice(0, k + 1).reduce((a, b) => a + b, 0));
+            const safe = [Math.floor(n / 3) - 1, Math.floor(2 * n / 3) - 1];
+            let i = 0, won = 0, fifty = true, hintOn = true, answered = false; const D = [];
+            const banked = () => { let b = 0; safe.forEach(s => { if (i > s) b = Math.max(b, cum[s]); }); return b; };
+            const draw = () => {
+                const q = d[i], dl = (D[i] = D[i] || gsDeal(q.options)); answered = false;
+                root.innerHTML = `<div class="gs-title">Climb the ladder — safe spots ⭐ protect your points</div><div class="gs-lad"><div>
+                    <div class="gs-row" style="margin-bottom:.8rem"><button class="gs-btn gs-ghost" id="gs-l50" ${fifty ? '' : 'disabled'}>✂️ 50:50</button><button class="gs-btn gs-ghost" id="gs-lhint" ${hintOn && q.hint ? '' : 'disabled'}>💡 Hint</button>${i > 0 ? '<button class="gs-btn gs-ghost" id="gs-lwalk">💰 Take my points</button>' : ''}</div>
+                    <div id="gs-hintbox"></div><p style="color:var(--gs-mut);font-weight:800;font-size:.72rem;margin:0 0 .3rem">QUESTION ${i + 1} OF ${n} · WORTH ${vals[i]} POINTS</p><p class="gs-q">${gsEsc(q.question)}</p>
+                    <div class="gs-optgrid">${gsOptsHTML(dl.options)}</div><div id="gs-fb"></div></div>
+                    <div><div class="gs-rungs">${vals.map((v, k) => `<div class="gs-rung ${safe.includes(k) ? 'safe' : ''} ${k === i ? 'cur' : ''} ${k < i ? 'won' : ''}"><span>${k + 1}${safe.includes(k) ? ' ⭐' : ''}</span><span>+${v}</span></div>`).join('')}</div>
+                    <p style="font-size:.72rem;color:var(--gs-mut);margin:.6rem 0 0">Won this climb: <b style="color:#ffd978">${won}</b> · Protected: <b style="color:#6ee7b7">${banked()}</b></p></div></div>`;
+                gsQ('#gs-l50', root).onclick = () => {
+                    fifty = false;
+                    shuffleArray(dl.options.map((o, k) => [o, k]).filter(([o]) => o !== dl.answer)).slice(0, Math.max(1, dl.options.length - 2)).forEach(([, k]) => { const b = gsQ(`.gs-opt[data-i="${k}"]`, root); b.disabled = true; b.classList.add('dim'); });
+                    gsQ('#gs-l50', root).disabled = true;
+                };
+                gsQ('#gs-lhint', root).onclick = () => { hintOn = false; gsQ('#gs-hintbox', root).innerHTML = `<div class="gs-hint">💡 ${gsEsc(q.hint)}</div>`; gsQ('#gs-lhint', root).disabled = true; };
+                const w = gsQ('#gs-lwalk', root);
+                if (w) w.onclick = () => cx.finish({ emoji: '💰', title: 'You took the points!', msg: `You walked away after question ${i} with ${won} points.`, stats: [['Questions', i + '/' + n]] });
+                gsQA('.gs-opt', root).forEach(b => b.onclick = () => {
+                    if (answered) return; answered = true;
+                    const good = dl.options[+b.dataset.i] === dl.answer;
+                    gsMarkOpts(root, dl, b);
+                    if (good) {
+                        cx.ok(vals[i]); won += vals[i]; i++;
+                        gsQ('#gs-fb', root).innerHTML = `<div class="gs-fb ok">Correct! +${vals[i - 1]}</div><div class="gs-row" style="justify-content:flex-end;margin-top:.8rem"><button class="gs-btn gs-gold" id="gs-lnext">${i === n ? 'Claim the top prize 🏆' : 'Next question →'}</button></div>`;
+                        gsQ('#gs-lnext', root).onclick = () => { if (i === n) cx.finish({ emoji: '🏆', title: 'You reached the top!', msg: `Every rung climbed — ${won} points won.`, stats: [['Questions', n + '/' + n]] }); else draw(); };
+                    } else {
+                        const keep = banked(), lose = won - keep;
+                        appState.score = Math.max(0, appState.score - lose); cx.no(0);
+                        gsQ('#gs-fb', root).innerHTML = `<div class="gs-fb bad">Not quite — the answer was “${gsEsc(dl.answer)}”. You drop back to your last safe spot${lose ? ` (−${lose})` : ''}.</div><div class="gs-row" style="justify-content:flex-end;margin-top:.8rem"><button class="gs-btn gs-gold" id="gs-lend">See results</button></div>`;
+                        gsQ('#gs-lend', root).onclick = () => cx.finish({ emoji: '💥', title: 'Game over', msg: `You fell on question ${i + 1} and kept ${keep} points.`, good: false, stats: [['Questions', i + '/' + n]] });
+                    }
+                });
+            };
+            draw();
+        }
+
+        // ---------- 3. SURVEY SHOWDOWN ----------
+        function renderShowdownGame(container) {
+            const root = gsShell(container, 'showdown'), cx = gsCtx(root);
+            const d = appState.currentData.showdown; const teams = { on: false }, T = [0, 0]; let ri = 0, cur = 0;
+            const setup = () => {
+                root.innerHTML = `<div style="text-align:center;padding:1rem"><div style="font-size:3rem">📊</div><h3 style="font-size:1.3rem;font-weight:800;color:#ffd978;margin:.3rem 0">How are you playing?</h3><p style="color:var(--gs-mut);margin:0 0 1rem">${d.length} rounds · 3 strikes per round · type your guesses</p><div class="gs-row" style="justify-content:center"><button class="gs-btn gs-gold" id="gs-solo">🙋 Solo</button><button class="gs-btn gs-ghost" id="gs-team">👥 Two teams</button></div></div>`;
+                gsQ('#gs-solo', root).onclick = () => { teams.on = false; round(); };
+                gsQ('#gs-team', root).onclick = () => { teams.on = true; round(); };
+            };
+            const round = () => {
+                const r = d[ri], revealed = new Set(); let strikes = 0, over = false;
+                root.innerHTML = `<div class="gs-title">Round ${ri + 1} of ${d.length}</div>
+                    ${teams.on ? `<div class="gs-teams"><div class="gs-team" id="gs-tm0">Team A<b>${T[0]}</b></div><div class="gs-team" id="gs-tm1">Team B<b>${T[1]}</b></div></div>` : ''}
+                    <p class="gs-q" style="text-align:center">${gsEsc(r.question)}</p>
+                    <div class="gs-board">${r.answers.map((a, k) => `<div class="gs-slot hid" id="gs-sl${k}"><span class="n">${k + 1}</span><span class="t">${gsEsc(a.text)}</span><span class="p">${a.points}</span></div>`).join('')}</div>
+                    <div class="gs-strikes" id="gs-str"></div>
+                    <form class="gs-row" id="gs-form" style="justify-content:center;max-width:520px;margin:0 auto"><input class="gs-input" id="gs-in" autocomplete="off" placeholder="Type your answer…"><button class="gs-btn gs-gold" type="submit">Guess</button></form>
+                    <div id="gs-msg" style="text-align:center;min-height:1.8rem;margin-top:.6rem;font-weight:700"></div><div class="gs-row" style="justify-content:center" id="gs-ctl"><button class="gs-btn gs-ghost" id="gs-giveup">Reveal answers</button></div>`;
+                const mark = () => { if (teams.on) { gsQ('#gs-tm0', root).classList.toggle('on', cur === 0); gsQ('#gs-tm1', root).classList.toggle('on', cur === 1); gsQ('#gs-tm0 b', root).textContent = T[0]; gsQ('#gs-tm1 b', root).textContent = T[1]; } };
+                mark();
+                const end = msg => {
+                    over = true;
+                    r.answers.forEach((a, k) => { if (!revealed.has(k)) { const s = gsQ('#gs-sl' + k, root); s.classList.remove('hid'); s.classList.add('miss', 'gs-flip'); } });
+                    gsQ('#gs-in', root).disabled = true; gsQ('#gs-msg', root).textContent = msg;
+                    gsQ('#gs-ctl', root).innerHTML = `<button class="gs-btn gs-gold" id="gs-next">${ri + 1 < d.length ? 'Next round →' : 'See results'}</button>`;
+                    gsQ('#gs-next', root).onclick = () => {
+                        ri++;
+                        if (ri < d.length) round();
+                        else if (teams.on) cx.finish({ emoji: '🏆', title: T[0] === T[1] ? 'It’s a tie!' : (T[0] > T[1] ? 'Team A wins!' : 'Team B wins!'), msg: 'Great showdown.', stats: [['Team A', T[0]], ['Team B', T[1]]] });
+                        else cx.finish({ emoji: '📊', title: 'Showdown complete!', msg: `You found ${T[0] + T[1]} points across ${d.length} rounds.` });
+                    };
+                };
+                gsQ('#gs-giveup', root).onclick = () => { if (!over) end('Here’s what you missed.'); };
+                gsQ('#gs-form', root).onsubmit = e => {
+                    e.preventDefault(); if (over) return;
+                    const inp = gsQ('#gs-in', root), g = gsNorm(inp.value); if (!g) return; inp.value = '';
+                    let hit = -1;
+                    r.answers.forEach((a, k) => {
+                        if (hit >= 0 || revealed.has(k)) return;
+                        const forms = [a.text, ...a.aliases].map(gsNorm);
+                        if (forms.some(f => f === g || (g.length >= 4 && f.includes(g)) || (f.length >= 4 && g.includes(f)) || (g.length >= 4 && f.length >= 5 && gsLev(f, g) <= (f.length >= 8 ? 2 : 1)))) hit = k;
+                    });
+                    if (hit >= 0) {
+                        revealed.add(hit); const a = r.answers[hit], s = gsQ('#gs-sl' + hit, root);
+                        s.classList.remove('hid'); s.classList.add('gs-flip'); T[cur] += a.points; cx.ok(a.points);
+                        gsQ('#gs-msg', root).textContent = `✅ “${a.text}” — ${a.points} points!`;
+                        if (revealed.size === r.answers.length) { end('Board cleared!'); return; }
+                    } else {
+                        strikes++; cx.no(0);
+                        gsQ('#gs-str', root).textContent = '✗ '.repeat(strikes).trim(); gsQ('#gs-msg', root).textContent = '❌ Not on the board.';
+                        if (strikes >= 3) { end('Three strikes!'); return; }
+                    }
+                    if (teams.on) { cur = 1 - cur; mark(); }
+                    inp.focus();
+                };
+                gsQ('#gs-in', root).focus();
+            };
+            setup();
+        }
+
+        // ---------- 4. SPIN THE WHEEL ----------
+        const GS_WHEEL_COLS = ['#1c4fc4', '#7900CC', '#047857', '#b45309', '#be123c', '#0e7490', '#4d7c0f', '#9333ea', '#c2410c', '#1d4ed8'];
+        function renderWheelGame(container) {
+            const root = gsShell(container, 'wheel'), cx = gsCtx(root);
+            const d = appState.currentData.wheel, n = d.length, seg = 2 * Math.PI / n, used = new Array(n).fill(null);
+            let rot = 0, spinning = false, left = n;
+            const calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            root.innerHTML = `<div class="gs-title">Spin to land on a question — every segment is played once</div>
+                <div class="gs-wheel-wrap"><div class="gs-ptr"></div><canvas id="gs-wcv" width="720" height="720" aria-label="Prize wheel"></canvas></div>
+                <div class="gs-row" style="justify-content:center;margin-top:1rem"><button class="gs-btn gs-gold" id="gs-spin" style="font-size:1rem;padding:.75rem 1.8rem">🎡 SPIN!</button></div><p id="gs-left" style="text-align:center;color:var(--gs-mut);font-weight:700;margin-top:.6rem"></p>`;
+            const cv = gsQ('#gs-wcv', root), g = cv.getContext('2d'), R = 360;
+            const draw = () => {
+                g.clearRect(0, 0, 720, 720); g.save(); g.translate(R, R); g.rotate(rot);
+                d.forEach((s, i) => {
+                    g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, R - 8, i * seg, (i + 1) * seg); g.closePath();
+                    g.fillStyle = used[i] === null ? GS_WHEEL_COLS[i % GS_WHEEL_COLS.length] : '#475569'; g.fill(); g.lineWidth = 4; g.strokeStyle = '#0b1a3d'; g.stroke();
+                    g.save(); g.rotate(i * seg + seg / 2); g.textAlign = 'right'; g.fillStyle = '#fff';
+                    const text = used[i] === null ? s.label : (used[i] ? '✓ ' : '✗ ') + s.label;
+                    let fs = 30; g.font = `800 ${fs}px system-ui, sans-serif`;
+                    while (g.measureText(text).width > R - 34 - 60 && fs > 14) { fs -= 2; g.font = `800 ${fs}px system-ui, sans-serif`; }
+                    g.fillText(text, R - 34, fs / 3); g.restore();
+                });
+                g.beginPath(); g.arc(0, 0, 38, 0, 7); g.fillStyle = '#0b1a3d'; g.fill(); g.lineWidth = 6; g.strokeStyle = '#e4c084'; g.stroke(); g.restore();
+            };
+            const upd = () => { gsQ('#gs-left', root).textContent = left ? `${left} segment${left > 1 ? 's' : ''} left` : ''; };
+            gsQ('#gs-spin', root).onclick = () => {
+                if (spinning || !left) return; spinning = true; gsQ('#gs-spin', root).disabled = true;
+                const free = used.map((u, i) => u === null ? i : -1).filter(i => i >= 0), k = free[Math.floor(Math.random() * free.length)];
+                const theta = (k + .5) * seg + (Math.random() * .7 - .35) * seg, target = -Math.PI / 2 - theta, TAU = 2 * Math.PI;
+                const start = rot, final = rot + TAU * (calm ? 1 : 5) + (((target - rot) % TAU) + TAU) % TAU, t0 = performance.now(), dur = calm ? 900 : 4200;
+                let lastTick = -1;
+                const step = now => {
+                    if (!cx.live()) return;
+                    const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3.2);
+                    rot = start + (final - start) * e; draw();
+                    const tk = Math.floor(rot / seg); if (tk !== lastTick) { lastTick = tk; if (!calm) playSound('click'); }
+                    if (p < 1) GS.raf = requestAnimationFrame(step); else { spinning = false; ask(k); }
+                };
+                GS.raf = requestAnimationFrame(step);
+            };
+            const ask = k => {
+                const s = d[k], q = gsDeal(s.options);
+                const o = gsModal(`<div class="gs-row" style="justify-content:space-between"><b style="color:#e4c084">${gsEsc(s.label)}</b><b style="color:#ffd978">${s.points} pts</b></div><p class="gs-q" style="margin-top:.8rem">${gsEsc(s.question)}</p><div class="gs-optgrid">${gsOptsHTML(q.options)}</div><div id="gs-fb"></div>`);
+                gsQA('.gs-opt', o).forEach(b => b.onclick = () => {
+                    const good = q.options[+b.dataset.i] === q.answer;
+                    gsMarkOpts(o, q, b);
+                    if (good) cx.ok(s.points); else cx.no(s.points);
+                    used[k] = good; left--;
+                    gsQ('#gs-fb', o).innerHTML = `<div class="gs-fb ${good ? 'ok' : 'bad'}">${good ? `Correct! +${s.points}` : `Not quite — the answer was “${gsEsc(q.answer)}”. −${Math.round(s.points / 2)}`}</div><div class="gs-row" style="justify-content:flex-end;margin-top:.8rem"><button class="gs-btn gs-gold" id="gs-cont">Continue →</button></div>`;
+                    gsQ('#gs-cont', o).onclick = () => {
+                        gsCloseModal(); draw(); upd(); gsQ('#gs-spin', root).disabled = false;
+                        if (!left) cx.finish({ emoji: '🎡', title: 'Wheel complete!', msg: `${used.filter(Boolean).length} of ${n} segments answered correctly.` });
+                    };
+                });
+            };
+            draw(); upd();
+        }
+
+        // ---------- 5. VOCAB BINGO ----------
+        function renderBingoGame(container) {
+            const root = gsShell(container, 'bingo'), cx = gsCtx(root);
+            const d = appState.currentData.bingo, N = d.length === 16 ? 4 : 3, board = shuffleArray(d), queue = shuffleArray(d), marked = new Array(N * N).fill(false), done = new Set();
+            let won = false, left = N * N;
+            const lines = [];
+            for (let r = 0; r < N; r++) lines.push(Array.from({ length: N }, (_, c) => r * N + c));
+            for (let c = 0; c < N; c++) lines.push(Array.from({ length: N }, (_, r) => r * N + c));
+            lines.push(Array.from({ length: N }, (_, k) => k * N + k)); lines.push(Array.from({ length: N }, (_, k) => k * N + (N - 1 - k)));
+            root.innerHTML = `<div class="gs-bclue"><small>Find the term that matches</small><span id="gs-clue"></span></div>
+                <div class="gs-bingo" style="grid-template-columns:repeat(${N},minmax(0,1fr))">${board.map((t, i) => `<button class="gs-bcell" data-i="${i}">${gsEsc(t.term)}</button>`).join('')}</div>
+                <div id="gs-msg" style="text-align:center;font-weight:800;min-height:2rem;margin-top:.8rem;color:#ffd978"></div><div class="gs-row" style="justify-content:center"><button class="gs-btn gs-ghost" id="gs-skip">⏭ Skip this clue</button></div>`;
+            const cells = gsQA('.gs-bcell', root), clue = () => { gsQ('#gs-clue', root).textContent = queue[0].clue; };
+            cells.forEach(b => b.onclick = () => {
+                const i = +b.dataset.i; if (marked[i]) return;
+                if (board[i].term === queue[0].term) {
+                    marked[i] = true; b.classList.add('on'); b.disabled = true; queue.shift(); left--; cx.ok(50);
+                    lines.forEach((ln, li) => {
+                        if (!done.has(li) && ln.every(k => marked[k])) {
+                            done.add(li); ln.forEach(k => cells[k].classList.add('line')); cx.bonus(50);
+                            gsQ('#gs-msg', root).textContent = '🎉 BINGO! +50 bonus';
+                            if (!won) { won = true; burstConfetti(); playSound('levelup'); }
+                        }
+                    });
+                    if (!left) { cx.finish({ emoji: '🔠', title: 'Full house!', msg: `You cleared the whole card with ${done.size} line${done.size === 1 ? '' : 's'}.` }); return; }
+                    clue();
+                } else {
+                    cx.no(50); b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong');
+                    gsQ('#gs-msg', root).textContent = '❌ Not that one — try again (−25)';
+                }
+            });
+            gsQ('#gs-skip', root).onclick = () => { queue.push(queue.shift()); clue(); };
+            clue();
+        }
+
+        // ---------- 6. TWO TRUTHS & A LIE ----------
+        function renderTwoTruthsGame(container) {
+            const root = gsShell(container, 'twotruths'), cx = gsCtx(root);
+            const d = appState.currentData.twotruths, order = shuffleArray(d.map((_, k) => k)); let i = 0;
+            const draw = () => {
+                const r = d[order[i]], st = shuffleArray([...r.truths.map(t => ({ t, lie: false })), { t: r.lie, lie: true }]);
+                root.innerHTML = `<div class="gs-prog"><i style="width:${i / d.length * 100}%"></i></div><p class="gs-q" style="text-align:center">Round ${i + 1} of ${d.length}: <span style="color:#ffd978">which one is the LIE?</span></p>
+                    <div style="max-width:700px;margin:0 auto;display:grid;gap:.6rem">${st.map((s, k) => `<button class="gs-opt" data-k="${k}" style="padding:1rem .9rem">${gsEsc(s.t)}</button>`).join('')}</div><div id="gs-fb" style="max-width:700px;margin:0 auto"></div>`;
+                gsQA('.gs-opt', root).forEach(b => b.onclick = () => {
+                    const good = st[+b.dataset.k].lie;
+                    gsQA('.gs-opt', root).forEach(x => { x.disabled = true; if (st[+x.dataset.k].lie) { x.classList.add('bad'); x.innerHTML = '🤥 ' + x.innerHTML; } else x.classList.add(x === b ? 'dim' : 'ok'); });
+                    if (good) cx.ok(100); else cx.no(100);
+                    i++;
+                    gsQ('#gs-fb', root).innerHTML = `<div class="gs-fb ${good ? 'ok' : 'bad'}">${good ? 'You spotted the lie! +100' : 'That one was true — the lie is marked in red. −50'}${r.explanation ? `<br><span style="font-weight:600">${gsEsc(r.explanation)}</span>` : ''}</div><div class="gs-row" style="justify-content:flex-end;margin-top:.8rem"><button class="gs-btn gs-gold" id="gs-next">${i === d.length ? 'See results' : 'Next round →'}</button></div>`;
+                    gsQ('#gs-next', root).onclick = () => { if (i === d.length) cx.finish({ emoji: '🕵️', title: 'Lie detector complete!', msg: 'How many liars did you catch?' }); else draw(); };
+                });
+            };
+            draw();
+        }
+
+        // ---------- 7. ESCAPE ROOM ----------
+        function renderEscapeGame(container) {
+            const root = gsShell(container, 'escape'), cx = gsCtx(root);
+            const d = appState.currentData.escape, n = d.locks.length, code = Array.from({ length: n }, () => Math.floor(Math.random() * 10)), t0 = Date.now(); let i = 0; const D = [];
+            const clock = () => { const s = Math.floor((Date.now() - t0) / 1000); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+            const doors = () => d.locks.map((l, k) => `<div class="gs-door ${k === i ? 'cur' : ''} ${k < i ? 'done' : ''}"><div class="dn">${k < i ? '🔓' : '🔒'}</div><div class="dd"><b>${gsEsc(l.name)}</b><br><span style="color:var(--gs-mut)">${gsEsc(l.scene)}</span></div><div class="dg">${k < i ? code[k] : '?'}</div></div>`).join('');
+            const head = () => `<div class="gs-title">🗝️ Escape the room <span class="gs-timer" id="gs-ext">${clock()}</span></div>${d.story && i === 0 ? `<p style="text-align:center;color:var(--gs-mut);max-width:620px;margin:0 auto .9rem">${gsEsc(d.story)}</p>` : ''}`;
+            GS.timer = setInterval(() => { if (!cx.live()) { clearInterval(GS.timer); return; } const t = gsQ('#gs-ext', root); if (t) t.textContent = clock(); }, 1000);
+            const lock = () => {
+                const l = d.locks[i], dl = (D[i] = D[i] || gsDeal(l.options));
+                root.innerHTML = head() + `<div style="max-width:700px;margin:0 auto">${doors()}<div class="gs-box" id="gs-lockbox"><p style="margin:0 0 .25rem;color:#e4c084;font-size:.72rem;font-weight:800;letter-spacing:.08em">${gsEsc(l.name.toUpperCase())}</p><p class="gs-q">${gsEsc(l.question)}</p><div class="gs-optgrid">${gsOptsHTML(dl.options)}</div><div id="gs-fb"></div><div class="gs-row" style="margin-top:.8rem">${l.hint ? '<button class="gs-btn gs-ghost" id="gs-hint">💡 Hint (−25)</button>' : ''}</div></div></div>`;
+                const h = gsQ('#gs-hint', root);
+                if (h) h.onclick = () => { cx.bonus(-25); gsQ('#gs-fb', root).innerHTML = `<div class="gs-hint">💡 ${gsEsc(l.hint)}</div>`; h.disabled = true; };
+                gsQA('.gs-opt', root).forEach(b => b.onclick = () => {
+                    if (dl.options[+b.dataset.i] === dl.answer) { cx.ok(100); i++; if (i === n) keypad(); else { playSound('levelup'); lock(); } }
+                    else { cx.no(50); b.disabled = true; b.classList.add('bad'); const bx = gsQ('#gs-lockbox', root); bx.classList.remove('gs-shake'); void bx.offsetWidth; bx.classList.add('gs-shake'); }
+                });
+            };
+            const keypad = () => {
+                root.innerHTML = head() + `<div style="max-width:700px;margin:0 auto">${doors()}<div style="text-align:center;padding:.6rem"><h3 style="font-size:1.3rem;font-weight:800;color:#ffd978;margin:0">🔐 The final lock</h3><p style="color:var(--gs-mut);margin:.3rem 0 0">Type the ${n} digits you uncovered, in order.</p><form class="gs-keypad" id="gs-form"><input id="gs-code" inputmode="numeric" maxlength="${n}" autocomplete="off" placeholder="${'•'.repeat(n)}"><button class="gs-btn gs-gold" type="submit">Unlock</button></form><div id="gs-fb"></div></div></div>`;
+                gsQ('#gs-code', root).focus();
+                gsQ('#gs-form', root).onsubmit = e => {
+                    e.preventDefault(); const v = gsQ('#gs-code', root).value.trim();
+                    if (v === code.join('')) {
+                        clearInterval(GS.timer); GS.timer = null;
+                        const secs = Math.floor((Date.now() - t0) / 1000), bonus = Math.max(0, 200 - secs); cx.bonus(bonus);
+                        cx.finish({ emoji: '🚪', title: 'You escaped!', msg: bonus ? `Speed bonus: +${bonus}` : 'Made it out in the end!', stats: [['Time', clock()]] });
+                    } else {
+                        cx.bonus(-15); playSound('incorrect');
+                        const f = gsQ('#gs-form', root); f.classList.remove('gs-shake'); void f.offsetWidth; f.classList.add('gs-shake');
+                        gsQ('#gs-fb', root).innerHTML = '<div class="gs-fb bad">That code doesn’t open the door. Check the digits above. −15</div>';
+                    }
+                };
+            };
+            lock();
+        }
+
+        // ---------- 8. VENN SORTER ----------
+        function renderVennGame(container) {
+            const root = gsShell(container, 'venn'), cx = gsCtx(root);
+            const d = appState.currentData.venn, place = new Array(d.items.length).fill(null), order = shuffleArray(d.items.map((_, i) => i)), locked = new Set(), paid = new Set(); let sel = null;
+            const zones = [['l', 'left', `Only ${d.leftLabel}`], ['b', 'both', 'Both'], ['r', 'right', `Only ${d.rightLabel}`]];
+            const chip = i => `<button class="gs-vn-chip ${sel === i ? 'sel' : ''} ${locked.has(i) ? 'ok' : ''}" data-i="${i}">${gsEsc(d.items[i].text)}</button>`;
+            const paint = () => {
+                const unplaced = order.filter(i => place[i] === null);
+                root.innerHTML = `<div class="gs-title">${gsEsc(d.leftLabel)} vs ${gsEsc(d.rightLabel)}</div><p class="gs-vn-hint">${sel === null ? '1. Tap a statement' : '2. Now tap the box where it belongs'}</p>
+                    <div class="gs-vn-bank">${unplaced.length ? unplaced.map(chip).join('') : '<span style="color:var(--gs-mut);font-weight:700">All placed — press Check!</span>'}</div>
+                    <div class="gs-vn-zones">${zones.map(([c, k, label]) => `<div class="gs-vn-zone ${c}" data-z="${k}"><h4>${gsEsc(label)}</h4>${order.filter(i => place[i] === k).map(chip).join('')}</div>`).join('')}</div>
+                    <div class="gs-row" style="justify-content:center;margin-top:1rem"><button class="gs-btn gs-gold" id="gs-check" ${unplaced.length ? 'disabled' : ''}>✔ Check my sort</button></div><div id="gs-fb" style="text-align:center;margin-top:.6rem;font-weight:700"></div>`;
+                gsQA('.gs-vn-chip', root).forEach(b => b.onclick = e => {
+                    e.stopPropagation(); const i = +b.dataset.i;
+                    if (sel !== null && sel !== i && place[i] !== null) { place[sel] = place[i]; sel = null; playSound('click'); paint(); return; } // tapping a chip already in a box = tapping that box
+                    if (locked.has(i)) return;
+                    if (place[i] !== null) { place[i] = null; sel = null; playSound('click'); paint(); } else { sel = sel === i ? null : i; paint(); }
+                });
+                gsQA('.gs-vn-zone', root).forEach(z => z.onclick = () => { if (sel === null) return; place[sel] = z.dataset.z; sel = null; playSound('click'); paint(); });
+                gsQ('#gs-check', root).onclick = () => {
+                    let wrong = 0; const wrongIdx = [];
+                    d.items.forEach((it, i) => {
+                        if (locked.has(i)) return;
+                        if (place[i] === it.region) { locked.add(i); if (!paid.has(i)) { paid.add(i); cx.ok(60); } } else { wrong++; wrongIdx.push(i); cx.no(60); }
+                    });
+                    if (!wrong) { cx.finish({ emoji: '⭕', title: 'Perfectly sorted!', msg: d.reflection ? `Now think about it: ${d.reflection}` : 'Every statement is in the right place.' }); return; }
+                    paint();
+                    gsQA('.gs-vn-chip', root).forEach(b => { if (wrongIdx.includes(+b.dataset.i)) b.classList.add('bad'); });
+                    gsQ('#gs-fb', root).textContent = `${wrong} in the wrong place — they’re shaking. Tap one to move it.`;
+                };
+            };
+            paint();
+        }
+
+
         // UI Modal Functions - Replaced by unified Prompt Builder View
         function initPromptBuilder() {
             const container = document.getElementById('builder-game-toggles');
@@ -944,8 +1540,19 @@
                     container.appendChild(toggle);
                 });
             });
+            updateChooseBanner();
             buildDynamicPrompt();
             updateDepthAdvisory();
+        }
+
+        // Bright call-to-action above the game list: nothing is pre-ticked, so say so loudly.
+        function updateChooseBanner() {
+            const el = document.getElementById('choose-games-banner');
+            if (!el) return;
+            const n = appState.promptSelections.length;
+            el.innerHTML = n === 0
+                ? '👇 Choose as many games as you want! 🎮<br><span class="text-xs font-bold opacity-80">Tick any number below — or press Select All</span>'
+                : `✅ ${n} game${n === 1 ? '' : 's'} chosen — add as many more as you like!`;
         }
 
         // Flags a heads-up when a senior year level is selected alongside games whose mechanic
@@ -968,7 +1575,7 @@
             const names = selectedFoundational.map(g => g.name).join(', ');
             const plural = selectedFoundational.length > 1;
             banner.classList.remove('hidden');
-            banner.innerHTML = `⚠️ <strong>${year} selected:</strong> ${names} ${plural ? 'are' : 'is a'} recall/mechanic-based game${plural ? 's' : ''} — good as a quick warm-up, but for senior assessment the 🧠 Analytical games below (Quiz, Bucket Sort, Timeline, True/False, Odd One Out, Term Muncher, Term Shooter, Crossword) will push students to think harder.`;
+            banner.innerHTML = `⚠️ <strong>${year} selected:</strong> ${names} ${plural ? 'are' : 'is a'} recall/mechanic-based game${plural ? 's' : ''} — good as a quick warm-up, but for senior assessment the 🧠 Analytical games below (Quiz, Quiz Board, Prize Ladder, Two Truths &amp; a Lie, Bucket Sort, Venn Sorter, Timeline, True/False, Odd One Out, Term Muncher, Term Shooter, Crossword) will push students to think harder.`;
         }
 
         function togglePromptSelection(gameId) {
@@ -1042,7 +1649,9 @@
             promptText += selectedSchemas.join(`,\n\n`);
             promptText += `\n}`;
 
-            document.getElementById('dynamic-prompt-area').value = promptText;
+            document.getElementById('dynamic-prompt-area').value = appState.promptSelections.length === 0
+                ? '👈 Tick the games you want in "Select Game Modes" and your prompt will appear here.\n\nChoose as many as you like.'
+                : promptText;
         }
 
         function copyPromptToClipboard() {
@@ -1052,11 +1661,13 @@
         }
 
         function copyDynamicPrompt() {
+            if (appState.promptSelections.length === 0) { showToast('☝️ Choose at least one game first!'); return; }
             copyPromptToClipboard();
             showToast("📋 Prompt copied! Paste this into ChatGPT, Gemini, or Claude.");
         }
 
         function openAiTab(url, name) {
+            if (appState.promptSelections.length === 0) { showToast('☝️ Choose at least one game first!'); return; }
             copyPromptToClipboard();
             window.open(url, '_blank', 'noopener');
             showToast(`📋 Prompt copied — opening ${name}. Paste with Ctrl/Cmd+V!`);
@@ -1067,6 +1678,20 @@
             if (!parsedData.topic) {
                 throw new Error("Invalid schema: Missing 'topic' key.");
             }
+
+            // Validate / normalise the Game Show + Venn games. A game whose data is unusable is
+            // dropped (with a warning) rather than crashing the whole suite.
+            const skipped = [];
+            Object.keys(GS_VAL).forEach(k => {
+                if (parsedData[k] === undefined) return;
+                try { parsedData[k] = GS_VAL[k](parsedData[k]); }
+                catch (e) {
+                    delete parsedData[k];
+                    const m = GAME_METADATA.find(g => g.id === k);
+                    skipped.push(`${m ? m.name : k}: ${e.message}`);
+                }
+            });
+            if (skipped.length) console.warn('Games skipped:', skipped);
 
             appState.currentTopic = parsedData.topic;
             appState.currentData = parsedData;
@@ -1085,6 +1710,7 @@
 
             resetGameStates();
             updateTopicHeader();
+            return skipped;
         }
 
         function processBuilderJson() {
@@ -1100,11 +1726,17 @@
 
             try {
                 // Strip markdown formatting if the LLM included it (e.g. ```json ... ```)
-                let cleanJson = rawJson.replace(/^```json\s*/i, '').replace(/```\s*$/, '');
-                
-                const parsedData = JSON.parse(cleanJson);
-                loadGameSuite(parsedData);
-                showToast("✨ Custom Game Loaded Successfully!");
+                // Also tolerate chatter before/after the JSON and curly "smart" quotes / trailing commas.
+                let cleanJson = rawJson.replace(/^```[a-zA-Z]*\s*/, '').replace(/```\s*$/, '');
+                const a = cleanJson.indexOf('{'), b = cleanJson.lastIndexOf('}');
+                if (a >= 0 && b > a) cleanJson = cleanJson.slice(a, b + 1);
+
+                let parsedData;
+                try { parsedData = JSON.parse(cleanJson); }
+                catch (e1) { parsedData = JSON.parse(cleanJson.replace(/[\u201c\u201d]/g, '"').replace(/,\s*([}\]])/g, '$1')); }
+                const skipped = loadGameSuite(parsedData);
+                if (skipped && skipped.length) showToast(`✨ Loaded — but skipped ${skipped.length} game${skipped.length > 1 ? 's' : ''}: ${skipped.join(' | ')}`);
+                else showToast("✨ Custom Game Loaded Successfully!");
                 
                 // Clear the import box for next time
                 document.getElementById('builder-json-import').value = '';
@@ -1423,6 +2055,7 @@
             clearTimeout(shooterEnemyTimer);
             shooterEnemyTimer = null;
             crosswordState = null;
+            gsReset();
         }
 
         // Navigation Controller
@@ -1432,6 +2065,7 @@
             clearInterval(muncherGhostInterval);
             clearTimeout(shooterEnemyTimer);
             clearTimeout(tfAdvanceTimer);
+            gsReset();
 
             document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => {
@@ -1553,6 +2187,14 @@
             else if (gameType === 'muncher') renderMuncherGame(container);
             else if (gameType === 'shooter') renderShooterGame(container);
             else if (gameType === 'crossword') renderCrosswordGame(container);
+            else if (gameType === 'quizboard') renderQuizBoardGame(container);
+            else if (gameType === 'ladder') renderLadderGame(container);
+            else if (gameType === 'showdown') renderShowdownGame(container);
+            else if (gameType === 'wheel') renderWheelGame(container);
+            else if (gameType === 'bingo') renderBingoGame(container);
+            else if (gameType === 'twotruths') renderTwoTruthsGame(container);
+            else if (gameType === 'escape') renderEscapeGame(container);
+            else if (gameType === 'venn') renderVennGame(container);
         }
 
         // Landing screen shown whenever no specific game is active yet — lets students pick
@@ -1586,6 +2228,7 @@
 
         function returnToGameMenu() {
             appState.activeGame = null;
+            gsReset();
             renderArcadeSubtabs();
             renderActiveMiniGame();
         }
